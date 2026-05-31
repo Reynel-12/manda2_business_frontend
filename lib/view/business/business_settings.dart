@@ -252,6 +252,14 @@ class _BusinessSettingsScreenState extends State<BusinessSettingsScreen>
 
   bool _isEditing = false;
   bool _isSaving = false;
+  final List<String> _availableCategories = const [
+    'Restaurante',
+    'Comida rapida',
+    'Cafeteria',
+    'Panaderia',
+    'Supermercado',
+    'Farmacia',
+  ];
 
   late AnimationController _entryCtrl;
   late Animation<double> _fadeAnim;
@@ -677,32 +685,77 @@ class _BusinessSettingsScreenState extends State<BusinessSettingsScreen>
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 8),
-                Wrap(
-                  spacing: 4,
-                  children: _profile.categories
-                      .map(
-                        (c) => Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 7,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.primarySurface,
-                            borderRadius: AppRadius.sm,
-                            border: Border.all(color: AppColors.divider),
-                          ),
-                          child: Text(
-                            c,
-                            style: const TextStyle(
-                              fontSize: 10,
-                              color: AppColors.primaryLight,
-                              fontWeight: FontWeight.w500,
+                _isEditing
+                    ? Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: _availableCategories.map((category) {
+                          final isSelected = _profile.categories.contains(
+                            category,
+                          );
+                          return FilterChip(
+                            label: Text(category),
+                            selected: isSelected,
+                            selectedColor: AppColors.primarySurface,
+                            checkmarkColor: AppColors.primary,
+                            side: BorderSide(
+                              color: isSelected
+                                  ? AppColors.primaryLight
+                                  : AppColors.divider,
                             ),
-                          ),
-                        ),
+                            labelStyle: TextStyle(
+                              fontSize: 11,
+                              color: isSelected
+                                  ? AppColors.primary
+                                  : AppColors.textSecondary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            onSelected: (selected) {
+                              setState(() {
+                                final updated = List<String>.from(
+                                  _profile.categories,
+                                );
+                                if (selected) {
+                                  if (!updated.contains(category)) {
+                                    updated.add(category);
+                                  }
+                                } else if (updated.length > 1) {
+                                  updated.remove(category);
+                                }
+                                _profile = _profile.copyWith(
+                                  categories: updated,
+                                );
+                              });
+                            },
+                          );
+                        }).toList(),
                       )
-                      .toList(),
-                ),
+                    : Wrap(
+                        spacing: 4,
+                        children: _profile.categories
+                            .map(
+                              (c) => Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 7,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primarySurface,
+                                  borderRadius: AppRadius.sm,
+                                  border: Border.all(color: AppColors.divider),
+                                ),
+                                child: Text(
+                                  c,
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    color: AppColors.primaryLight,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            )
+                            .toList(),
+                      ),
               ],
             ),
           ),

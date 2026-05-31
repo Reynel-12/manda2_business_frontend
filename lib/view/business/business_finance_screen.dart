@@ -72,7 +72,10 @@ class _BusinessFinanceScreenState extends State<BusinessFinanceScreen>
       header: '',
       canShowMarker: false,
       activationMode: ActivationMode.singleTap,
-      textStyle: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+      textStyle: const TextStyle(
+        fontWeight: FontWeight.bold,
+        color: Colors.white,
+      ),
     );
 
     _animationController = AnimationController(
@@ -490,7 +493,10 @@ class _BusinessFinanceScreenState extends State<BusinessFinanceScreen>
                   TextButton.icon(
                     onPressed: () => setState(() => _selectedChartIndex = null),
                     icon: const Icon(Icons.clear_rounded, size: 16),
-                    label: const Text('Limpiar', style: TextStyle(fontSize: 12)),
+                    label: const Text(
+                      'Limpiar',
+                      style: TextStyle(fontSize: 12),
+                    ),
                     style: TextButton.styleFrom(
                       foregroundColor: _C.textMuted,
                       visualDensity: VisualDensity.compact,
@@ -534,7 +540,9 @@ class _BusinessFinanceScreenState extends State<BusinessFinanceScreen>
                     yValueMapper: (d, _) => d.amount,
                     color: _C.primary,
                     enableTooltip: true,
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(6)),
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(6),
+                    ),
                     selectionBehavior: SelectionBehavior(
                       enable: true,
                       unselectedOpacity: 0.4,
@@ -597,7 +605,10 @@ class _BusinessFinanceScreenState extends State<BusinessFinanceScreen>
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
-                                  _currencyFormat.format(_weeklySalesData[_selectedChartIndex!].amount),
+                                  _currencyFormat.format(
+                                    _weeklySalesData[_selectedChartIndex!]
+                                        .amount,
+                                  ),
                                   style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
@@ -619,7 +630,11 @@ class _BusinessFinanceScreenState extends State<BusinessFinanceScreen>
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.touch_app_rounded, size: 14, color: _C.textMuted.withOpacity(0.7)),
+                          Icon(
+                            Icons.touch_app_rounded,
+                            size: 14,
+                            color: _C.textMuted.withOpacity(0.7),
+                          ),
                           const SizedBox(width: 6),
                           const Text(
                             'Toca una barra del gráfico para ver detalles exactos',
