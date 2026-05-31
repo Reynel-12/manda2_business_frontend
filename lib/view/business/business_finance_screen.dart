@@ -56,6 +56,8 @@ class _BusinessFinanceScreenState extends State<BusinessFinanceScreen>
     pendingSettlements: 0,
   );
 
+  int? _selectedChartIndex;
+  late TooltipBehavior _tooltipBehavior;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
 
@@ -64,6 +66,14 @@ class _BusinessFinanceScreenState extends State<BusinessFinanceScreen>
     super.initState();
     _loadSampleData();
     _calculateSummary();
+
+    _tooltipBehavior = TooltipBehavior(
+      enable: true,
+      header: '',
+      canShowMarker: false,
+      activationMode: ActivationMode.singleTap,
+      textStyle: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+    );
 
     _animationController = AnimationController(
       vsync: this,
@@ -221,7 +231,7 @@ class _BusinessFinanceScreenState extends State<BusinessFinanceScreen>
             children: [
               _buildPeriodSelector(),
               const SizedBox(height: 32),
-              _buildSummaryGrid(summaryCrossCount),
+              _buildSummaryGrid(summaryCrossCount, 84.0),
               const SizedBox(height: 32),
               _buildSalesChart(),
               const SizedBox(height: 32),
@@ -325,38 +335,51 @@ class _BusinessFinanceScreenState extends State<BusinessFinanceScreen>
     );
   }
 
-  Widget _buildSummaryGrid(int crossCount) {
+  Widget _buildSummaryGrid(int crossCount, double cardHeight) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isDesktop = screenWidth >= 1200;
+    final isTablet = screenWidth >= 600;
+    final double horizontal = isDesktop
+        ? 56.0
+        : isTablet
+        ? 32.0
+        : 16.0;
+
+    final double gridWidth = screenWidth - (horizontal * 2);
+    final double columnWidth = (gridWidth - (crossCount - 1) * 16) / crossCount;
+    final double aspectRatio = columnWidth / cardHeight;
+
     return GridView.count(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       crossAxisCount: crossCount,
       crossAxisSpacing: 16,
       mainAxisSpacing: 16,
-      childAspectRatio: 0.9,
+      childAspectRatio: aspectRatio,
       children: [
         _buildSummaryCard(
           'Ventas totales',
           _financialSummary.totalSales,
           Icons.trending_up,
-          const Color(0xFF05386B),
+          _C.primary,
         ),
         _buildSummaryCard(
           'Comisión (10%)',
           _financialSummary.commission,
           Icons.percent,
-          const Color(0xFFFF6B00),
+          _C.accent,
         ),
         _buildSummaryCard(
           'Monto neto',
           _financialSummary.netAmount,
           Icons.account_balance_wallet,
-          Colors.green,
+          const Color(0xFF10B981), // Emerald green
         ),
         _buildSummaryCard(
           'Pendiente liquidar',
           _financialSummary.pendingSettlements,
           Icons.pending,
-          Colors.orange,
+          const Color(0xFFF59E0B), // Warm orange/amber
         ),
       ],
     );
@@ -368,21 +391,75 @@ class _BusinessFinanceScreenState extends State<BusinessFinanceScreen>
     IconData icon,
     Color color,
   ) {
-    return _surfaceCard(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    return Container(
+      decoration: BoxDecoration(
+        color: _C.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: _C.divider),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Stack(
           children: [
-            Icon(icon, size: 32, color: color),
-            const SizedBox(height: 16),
-            Text(title, style: const TextStyle(color: _C.textMuted)),
-            Text(
-              _currencyFormat.format(amount),
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: color,
+            Positioned(
+              left: 0,
+              top: 0,
+              bottom: 0,
+              width: 4,
+              child: Container(color: color),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 12, 12),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: color.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(icon, size: 22, color: color),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          title,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: _C.textMuted,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 4),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            _currencyFormat.format(amount),
+                            style: TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold,
+                              color: color,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -398,28 +475,163 @@ class _BusinessFinanceScreenState extends State<BusinessFinanceScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Ventas Semanales',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: _C.textPrimary,
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Ventas semanales',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: _C.textPrimary,
+                  ),
+                ),
+                if (_selectedChartIndex != null)
+                  TextButton.icon(
+                    onPressed: () => setState(() => _selectedChartIndex = null),
+                    icon: const Icon(Icons.clear_rounded, size: 16),
+                    label: const Text('Limpiar', style: TextStyle(fontSize: 12)),
+                    style: TextButton.styleFrom(
+                      foregroundColor: _C.textMuted,
+                      visualDensity: VisualDensity.compact,
+                    ),
+                  ),
+              ],
             ),
             const SizedBox(height: 16),
             SizedBox(
               height: 250,
               child: SfCartesianChart(
-                primaryXAxis: CategoryAxis(),
+                tooltipBehavior: _tooltipBehavior,
+                primaryXAxis: CategoryAxis(
+                  labelStyle: const TextStyle(
+                    color: _C.textMuted,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  axisLine: const AxisLine(color: _C.divider),
+                  majorTickLines: const MajorTickLines(size: 0),
+                ),
+                primaryYAxis: NumericAxis(
+                  numberFormat: _currencyFormat,
+                  labelStyle: const TextStyle(
+                    color: _C.textMuted,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  axisLine: const AxisLine(width: 0),
+                  majorTickLines: const MajorTickLines(size: 0),
+                  majorGridLines: const MajorGridLines(
+                    color: _C.divider,
+                    width: 1,
+                    dashArray: <double>[4, 4],
+                  ),
+                ),
                 series: <CartesianSeries>[
                   ColumnSeries<SalesData, String>(
                     dataSource: _weeklySalesData,
                     xValueMapper: (d, _) => d.day,
                     yValueMapper: (d, _) => d.amount,
                     color: _C.primary,
+                    enableTooltip: true,
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(6)),
+                    selectionBehavior: SelectionBehavior(
+                      enable: true,
+                      unselectedOpacity: 0.4,
+                      selectedColor: _C.accent,
+                    ),
+                    onPointTap: (ChartPointDetails details) {
+                      if (details.pointIndex != null) {
+                        setState(() {
+                          if (_selectedChartIndex == details.pointIndex) {
+                            _selectedChartIndex = null;
+                          } else {
+                            _selectedChartIndex = details.pointIndex;
+                          }
+                        });
+                      }
+                    },
                   ),
                 ],
               ),
+            ),
+            const SizedBox(height: 16),
+            AnimatedSize(
+              duration: const Duration(milliseconds: 250),
+              curve: Curves.easeInOut,
+              child: _selectedChartIndex != null
+                  ? Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: _C.surfaceSoft,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: _C.divider),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: _C.accent.withOpacity(0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.insights_rounded,
+                              size: 20,
+                              color: _C.accent,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Detalle de selección: ${_weeklySalesData[_selectedChartIndex!].day}',
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: _C.textMuted,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  _currencyFormat.format(_weeklySalesData[_selectedChartIndex!].amount),
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: _C.textPrimary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Icon(
+                            Icons.check_circle_outline_rounded,
+                            color: Colors.green,
+                            size: 20,
+                          ),
+                        ],
+                      ),
+                    )
+                  : Center(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.touch_app_rounded, size: 14, color: _C.textMuted.withOpacity(0.7)),
+                          const SizedBox(width: 6),
+                          const Text(
+                            'Toca una barra del gráfico para ver detalles exactos',
+                            style: TextStyle(
+                              color: _C.textMuted,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
             ),
           ],
         ),
