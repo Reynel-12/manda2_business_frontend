@@ -49,6 +49,7 @@ class _BusinessDashboardScreenState extends State<BusinessDashboardScreen>
   BusinessStore? _storeInfo;
   BusinessStats? _stats;
   int _currentIndex = 0;
+  OrderStatus? _selectedOrderStatusFilter;
 
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -688,26 +689,25 @@ class _BusinessDashboardScreenState extends State<BusinessDashboardScreen>
   // Orders section
   // ─────────────────────────────────────────────
   Widget _buildOrdersSection(bool isDesktop, bool isTablet) {
-    // Ordenar: urgentes primero
-    final sorted = [..._orders]
-      ..sort((a, b) {
-        return _orderPriority(a.status).compareTo(_orderPriority(b.status));
-      });
+    // Ordenar: urgentes primero y por hora mas reciente dentro del mismo estado
+    final sorted = [..._orders]..sort((a, b) {
+      final byPriority =
+          _orderPriority(a.status).compareTo(_orderPriority(b.status));
+      if (byPriority != 0) return byPriority;
+      return b.orderTime.compareTo(a.orderTime);
+    });
 
-    final activeOrders = sorted
-        .where(
-          (o) =>
-              o.status != OrderStatus.delivered &&
-              o.status != OrderStatus.cancelled,
-        )
-        .toList();
-    final finishedOrders = sorted
-        .where(
-          (o) =>
-              o.status == OrderStatus.delivered ||
-              o.status == OrderStatus.cancelled,
-        )
-        .toList();
+    final visibleOrders = _selectedOrderStatusFilter == null
+        ? sorted
+        : sorted.where((o) => o.status == _selectedOrderStatusFilter).toList();
+    final orderedStatuses = [
+      OrderStatus.pending,
+      OrderStatus.preparing,
+      OrderStatus.ready,
+      OrderStatus.onTheWay,
+      OrderStatus.delivered,
+      OrderStatus.cancelled,
+    ];
 
     return Container(
       padding: const EdgeInsets.fromLTRB(18, 16, 18, 18),
@@ -719,7 +719,6 @@ class _BusinessDashboardScreenState extends State<BusinessDashboardScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Header ─────────────────────────────
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -753,19 +752,73 @@ class _BusinessDashboardScreenState extends State<BusinessDashboardScreen>
             ],
           ),
           const SizedBox(height: 14),
-
-          // ── Pedidos activos ─────────────────────
-          if (activeOrders.isNotEmpty) ...[
-            _buildOrderGrid(activeOrders, isDesktop, isTablet),
-          ],
-
-          // ── Pedidos finalizados ─────────────────
-          if (finishedOrders.isNotEmpty) ...[
-            const SizedBox(height: 20),
-            const _SectionDivider(label: 'Finalizados'),
-            const SizedBox(height: 12),
-            _buildOrderGrid(finishedOrders, isDesktop, isTablet, opacity: 0.65),
-          ],
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            child: Row(
+              children: [
+                _OrderFilterChip(
+                  label: 'Todos',
+                  count: _orders.length,
+                  selected: _selectedOrderStatusFilter == null,
+                  onTap: () => setState(() => _selectedOrderStatusFilter = null),
+                ),
+                const SizedBox(width: 8),
+                ...orderedStatuses.map((status) {
+                  final count = _orders.where((o) => o.status == status).length;
+                  if (count == 0) return const SizedBox.shrink();
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: _OrderFilterChip(
+                      label: _getStatusText(status),
+                      count: count,
+                      selected: _selectedOrderStatusFilter == status,
+                      color: _getStatusColor(status),
+                      onTap: () {
+                        setState(() => _selectedOrderStatusFilter = status);
+                      },
+                    ),
+                  );
+                }),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          if (visibleOrders.isEmpty)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 14),
+              child: Text(
+                'No hay pedidos para este filtro.',
+                style: TextStyle(
+                  color: _C.textHint,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            )
+          else
+            ...orderedStatuses.map((status) {
+              final group = visibleOrders.where((o) => o.status == status).toList();
+              if (group.isEmpty) return const SizedBox.shrink();
+              final isFinished =
+                  status == OrderStatus.delivered ||
+                  status == OrderStatus.cancelled;
+              return Column(
+                children: [
+                  _SectionDivider(
+                    label: '${_getStatusText(status)} (${group.length})',
+                  ),
+                  const SizedBox(height: 12),
+                  _buildOrderGrid(
+                    group,
+                    isDesktop,
+                    isTablet,
+                    opacity: isFinished ? 0.7 : 1.0,
+                  ),
+                  const SizedBox(height: 18),
+                ],
+              );
+            }),
         ],
       ),
     );
@@ -1209,6 +1262,73 @@ class _StatCardCompact extends StatelessWidget {
   }
 }
 
+class _OrderFilterChip extends StatelessWidget {
+  final String label;
+  final int count;
+  final bool selected;
+  final Color? color;
+  final VoidCallback onTap;
+
+  const _OrderFilterChip({
+    required this.label,
+    required this.count,
+    required this.selected,
+    required this.onTap,
+    this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final tone = color ?? _C.primary;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(999),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+          decoration: BoxDecoration(
+            color: selected ? tone.withOpacity(0.12) : _C.surfaceSoft,
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(
+              color: selected ? tone.withOpacity(0.45) : _C.divider,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  color: selected ? tone : _C.textSecondary,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(width: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                decoration: BoxDecoration(
+                  color: selected ? tone.withOpacity(0.16) : _C.background,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  '$count',
+                  style: TextStyle(
+                    color: selected ? tone : _C.textHint,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
 /// Divider de sección con label
 class _SectionDivider extends StatelessWidget {
   final String label;
@@ -2646,3 +2766,5 @@ class BusinessStats {
     required this.averageOrderValue,
   });
 }
+
+

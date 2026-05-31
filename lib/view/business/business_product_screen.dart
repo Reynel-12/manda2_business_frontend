@@ -48,7 +48,8 @@ const List<String> _kDefaultCategories = [
 // ─────────────────────────────────────────────
 class BusinessProductsScreen extends StatefulWidget {
   final bool isTab;
-  const BusinessProductsScreen({Key? key, this.isTab = false}) : super(key: key);
+  const BusinessProductsScreen({Key? key, this.isTab = false})
+    : super(key: key);
 
   @override
   State<BusinessProductsScreen> createState() => _BusinessProductsScreenState();
@@ -807,99 +808,105 @@ class _BusinessProductsScreenState extends State<BusinessProductsScreen>
           const SizedBox(height: 10),
 
           // Disponibilidad
-          Row(
-            children: [
-              const Text(
-                'Disponibilidad',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: _C.textHint,
-                  letterSpacing: 0.3,
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                const Text(
+                  'Disponibilidad',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: _C.textHint,
+                    letterSpacing: 0.3,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              ..._availabilityFilters.map((f) {
-                final isActive = f == _selectedAvailability;
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: GestureDetector(
-                    onTap: () => setState(() => _selectedAvailability = f),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 150),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: isActive ? _C.accent : _C.background,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: isActive ? _C.accent : _C.divider,
+                const SizedBox(width: 12),
+                ..._availabilityFilters.map((f) {
+                  final isActive = f == _selectedAvailability;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: GestureDetector(
+                      onTap: () => setState(() => _selectedAvailability = f),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 150),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
                         ),
-                      ),
-                      child: Text(
-                        f,
-                        style: TextStyle(
-                          color: isActive ? Colors.white : _C.textSecondary,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
+                        decoration: BoxDecoration(
+                          color: isActive ? _C.accent : _C.background,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: isActive ? _C.accent : _C.divider,
+                          ),
+                        ),
+                        child: Text(
+                          f,
+                          style: TextStyle(
+                            color: isActive ? Colors.white : _C.textSecondary,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                );
-              }).toList(),
-            ],
+                  );
+                }),
+              ],
+            ),
           ),
 
           const SizedBox(height: 10),
 
           // Ordenar por
-          Row(
-            children: [
-              const Text(
-                'Ordenar',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: _C.textHint,
-                  letterSpacing: 0.3,
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                const Text(
+                  'Ordenar',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: _C.textHint,
+                    letterSpacing: 0.3,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              ..._sortOptions.map((s) {
-                final isActive = s == _sortBy;
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: GestureDetector(
-                    onTap: () => setState(() => _sortBy = s),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 150),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: isActive ? _C.primary : _C.background,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: isActive ? _C.primary : _C.divider,
+                const SizedBox(width: 12),
+                ..._sortOptions.map((s) {
+                  final isActive = s == _sortBy;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: GestureDetector(
+                      onTap: () => setState(() => _sortBy = s),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 150),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
                         ),
-                      ),
-                      child: Text(
-                        s,
-                        style: TextStyle(
-                          color: isActive ? Colors.white : _C.textSecondary,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
+                        decoration: BoxDecoration(
+                          color: isActive ? _C.primary : _C.background,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: isActive ? _C.primary : _C.divider,
+                          ),
+                        ),
+                        child: Text(
+                          s,
+                          style: TextStyle(
+                            color: isActive ? Colors.white : _C.textSecondary,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                );
-              }).toList(),
-            ],
+                  );
+                }).toList(),
+              ],
+            ),
           ),
 
           if (_hasActiveFilters) ...[

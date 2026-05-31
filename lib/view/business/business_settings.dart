@@ -609,57 +609,57 @@ class _BusinessSettingsScreenState extends State<BusinessSettingsScreen>
       child: Row(
         children: [
           // Logo
-          Stack(
-            children: [
-              Container(
-                width: 72,
-                height: 72,
-                decoration: BoxDecoration(
-                  color: AppColors.primarySurface,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.divider, width: 2),
-                ),
-                clipBehavior: Clip.antiAlias,
-                child: _profile.logoUrl == '__mock__'
-                    ? const Icon(
-                        Icons.store,
-                        color: AppColors.primary,
-                        size: 32,
-                      )
-                    : Image.network(
-                        _profile.logoUrl,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => const Icon(
-                          Icons.broken_image_outlined,
-                          color: AppColors.textMuted,
-                          size: 28,
-                        ),
-                      ),
-              ),
-              if (_isEditing)
-                Positioned(
-                  bottom: 0,
-                  right: 0,
-                  child: GestureDetector(
-                    onTap: () {},
-                    child: Container(
-                      width: 24,
-                      height: 24,
-                      decoration: const BoxDecoration(
-                        color: AppColors.accent,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.camera_alt,
-                        color: Colors.white,
-                        size: 12,
-                      ),
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(width: 16),
+          // Stack(
+          //   children: [
+          //     Container(
+          //       width: 72,
+          //       height: 72,
+          //       decoration: BoxDecoration(
+          //         color: AppColors.primarySurface,
+          //         shape: BoxShape.circle,
+          //         border: Border.all(color: AppColors.divider, width: 2),
+          //       ),
+          //       clipBehavior: Clip.antiAlias,
+          //       child: _profile.logoUrl == '__mock__'
+          //           ? const Icon(
+          //               Icons.store,
+          //               color: AppColors.primary,
+          //               size: 32,
+          //             )
+          //           : Image.network(
+          //               _profile.logoUrl,
+          //               fit: BoxFit.cover,
+          //               errorBuilder: (_, __, ___) => const Icon(
+          //                 Icons.broken_image_outlined,
+          //                 color: AppColors.textMuted,
+          //                 size: 28,
+          //               ),
+          //             ),
+          //     ),
+          //     if (_isEditing)
+          //       Positioned(
+          //         bottom: 0,
+          //         right: 0,
+          //         child: GestureDetector(
+          //           onTap: () {},
+          //           child: Container(
+          //             width: 24,
+          //             height: 24,
+          //             decoration: const BoxDecoration(
+          //               color: AppColors.accent,
+          //               shape: BoxShape.circle,
+          //             ),
+          //             child: const Icon(
+          //               Icons.camera_alt,
+          //               color: Colors.white,
+          //               size: 12,
+          //             ),
+          //           ),
+          //         ),
+          //       ),
+          //   ],
+          // ),
+          // const SizedBox(width: 16),
           // Nombre y descripción
           Expanded(
             child: Column(
