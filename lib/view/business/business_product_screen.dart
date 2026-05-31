@@ -47,7 +47,8 @@ const List<String> _kDefaultCategories = [
 // BusinessProductsScreen
 // ─────────────────────────────────────────────
 class BusinessProductsScreen extends StatefulWidget {
-  const BusinessProductsScreen({Key? key}) : super(key: key);
+  final bool isTab;
+  const BusinessProductsScreen({Key? key, this.isTab = false}) : super(key: key);
 
   @override
   State<BusinessProductsScreen> createState() => _BusinessProductsScreenState();
@@ -536,11 +537,13 @@ class _BusinessProductsScreenState extends State<BusinessProductsScreen>
       foregroundColor: _C.textPrimary,
       elevation: 0,
       scrolledUnderElevation: 0,
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back_rounded),
-        onPressed: () => Navigator.pop(context),
-        splashRadius: 22,
-      ),
+      leading: widget.isTab
+          ? null
+          : IconButton(
+              icon: const Icon(Icons.arrow_back_rounded),
+              onPressed: () => Navigator.pop(context),
+              splashRadius: 22,
+            ),
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

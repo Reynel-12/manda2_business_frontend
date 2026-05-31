@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:manda2_business_frontend/view/general/login_screen.dart';
 
 // ─────────────────────────────────────────────
 //  DESIGN TOKENS
@@ -23,6 +24,8 @@ class AppColors {
   static const successSurface = Color(0xFFEAF7EF);
   static const warning = Color(0xFFF39C12);
   static const warningSurface = Color(0xFFFEF9EC);
+  static const textSec = Color(0xFF2C3E50);
+  static const primarySoft = Color(0xFFE8EFF7);
 }
 
 class AppRadius {
@@ -30,6 +33,14 @@ class AppRadius {
   static const md = BorderRadius.all(Radius.circular(14));
   static const lg = BorderRadius.all(Radius.circular(18));
   static const xl = BorderRadius.all(Radius.circular(24));
+  static const card = 14.0;
+  static const button = 10.0;
+}
+
+class _S {
+  static const sm = 8.0;
+  static const md = 16.0;
+  static const lg = 24.0;
 }
 
 class AppShadow {
@@ -158,7 +169,8 @@ class BusinessDay {
 //  PANTALLA PRINCIPAL
 // ─────────────────────────────────────────────
 class BusinessSettingsScreen extends StatefulWidget {
-  const BusinessSettingsScreen({super.key});
+  final bool isTab;
+  const BusinessSettingsScreen({super.key, this.isTab = false});
 
   @override
   State<BusinessSettingsScreen> createState() => _BusinessSettingsScreenState();
@@ -394,9 +406,17 @@ class _BusinessSettingsScreenState extends State<BusinessSettingsScreen>
             autovalidateMode: AutovalidateMode.onUserInteraction,
             child: ListView(
               padding: EdgeInsets.fromLTRB(
-                isDesktop ? 56 : isWide ? 32 : 16,
+                isDesktop
+                    ? 56
+                    : isWide
+                    ? 32
+                    : 16,
                 0,
-                isDesktop ? 56 : isWide ? 32 : 16,
+                isDesktop
+                    ? 56
+                    : isWide
+                    ? 32
+                    : 16,
                 _isEditing ? 112 : 28,
               ),
               children: [
@@ -428,6 +448,17 @@ class _BusinessSettingsScreenState extends State<BusinessSettingsScreen>
                   _buildDeliverySection(),
                 ],
                 const SizedBox(height: 16),
+                // Grupo 3: Sesión (separado y con énfasis en peligro)
+                _SurfaceCard(
+                  padding: EdgeInsets.zero,
+                  child: _SettingRow(
+                    icon: Icons.logout_rounded,
+                    label: 'Cerrar sesión',
+                    isDangerous: true,
+                    onTap: () => _confirmLogout(),
+                  ),
+                ),
+                const SizedBox(height: 16),
               ],
             ),
           ),
@@ -445,24 +476,26 @@ class _BusinessSettingsScreenState extends State<BusinessSettingsScreen>
       elevation: 0,
       scrolledUnderElevation: 0,
       centerTitle: false,
-      leading: IconButton(
-        icon: Container(
-          padding: const EdgeInsets.all(6),
-          decoration: BoxDecoration(
-            color: AppColors.surfaceSoft,
-            borderRadius: AppRadius.sm,
-            border: Border.all(color: AppColors.divider),
-          ),
-          child: const Icon(Icons.arrow_back, size: 18),
-        ),
-        onPressed: () {
-          if (_isEditing) {
-            _showDiscardDialog();
-          } else {
-            Navigator.pop(context);
-          }
-        },
-      ),
+      leading: widget.isTab
+          ? null
+          : IconButton(
+              icon: Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceSoft,
+                  borderRadius: AppRadius.sm,
+                  border: Border.all(color: AppColors.divider),
+                ),
+                child: const Icon(Icons.arrow_back, size: 18),
+              ),
+              onPressed: () {
+                if (_isEditing) {
+                  _showDiscardDialog();
+                } else {
+                  Navigator.pop(context);
+                }
+              },
+            ),
       title: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1125,6 +1158,106 @@ class _BusinessSettingsScreenState extends State<BusinessSettingsScreen>
       ),
     );
   }
+
+  void _confirmLogout() {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.card),
+        ),
+        contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+        actionsPadding: const EdgeInsets.all(12),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                color: AppColors.error.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.logout_rounded,
+                color: AppColors.error,
+                size: 24,
+              ),
+            ),
+            const SizedBox(height: _S.md),
+            const Text(
+              'Cerrar sesión',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: AppColors.primary,
+              ),
+            ),
+            const SizedBox(height: _S.sm),
+            const Text(
+              '¿Seguro que deseas salir de tu cuenta?',
+              style: TextStyle(
+                fontSize: 13,
+                color: AppColors.textMuted,
+                height: 1.5,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+        actions: [
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.textSec,
+                    side: const BorderSide(color: AppColors.divider),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppRadius.button),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  child: const Text(
+                    'Cancelar',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ),
+              const SizedBox(width: _S.sm),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const LoginScreen(),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.error,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppRadius.button),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  child: const Text(
+                    'Salir',
+                    style: TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 // ─────────────────────────────────────────────
@@ -1617,6 +1750,106 @@ class _MetricChip extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SUBCOMPONENTES
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Card de superficie reutilizable con sombra sutil
+class _SurfaceCard extends StatelessWidget {
+  final Widget child;
+  final EdgeInsetsGeometry? padding;
+
+  const _SurfaceCard({required this.child, this.padding});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: padding ?? const EdgeInsets.all(_S.lg),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        border: Border.all(color: AppColors.divider),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF0D1B2A).withOpacity(0.06),
+            blurRadius: 12,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: child,
+    );
+  }
+}
+
+/// Fila de ajuste individual
+class _SettingRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Widget? trailing;
+  final bool isDangerous;
+  final VoidCallback? onTap;
+
+  const _SettingRow({
+    required this.icon,
+    required this.label,
+    this.trailing,
+    this.isDangerous = false,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final color = isDangerous ? AppColors.error : AppColors.primary;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: _S.md, vertical: 15),
+          child: Row(
+            children: [
+              Container(
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(
+                  color: isDangerous
+                      ? AppColors.error.withOpacity(0.08)
+                      : AppColors.primarySoft,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(icon, size: 17, color: color),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: isDangerous ? AppColors.error : AppColors.textSec,
+                  ),
+                ),
+              ),
+              trailing ??
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    color: isDangerous
+                        ? AppColors.error.withOpacity(0.5)
+                        : AppColors.textMuted,
+                    size: 18,
+                  ),
+            ],
+          ),
+        ),
       ),
     );
   }

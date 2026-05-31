@@ -48,6 +48,7 @@ class _BusinessDashboardScreenState extends State<BusinessDashboardScreen>
   List<BusinessOrder> _orders = [];
   BusinessStore? _storeInfo;
   BusinessStats? _stats;
+  int _currentIndex = 0;
 
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -467,35 +468,43 @@ class _BusinessDashboardScreenState extends State<BusinessDashboardScreen>
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: _C.background,
-      appBar: _buildAppBar(),
-      body: SlideTransition(
-        position: _slideAnimation,
-        child: FadeTransition(
-          opacity: _fadeAnimation,
-          child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(16, 14, 16, 30),
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 1240),
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: isDesktop ? 40 : 4),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildStoreHeader(isDesktop || isTablet),
-                      const SizedBox(height: 26),
-                      _buildStatsRow(isDesktop, isTablet),
-                      const SizedBox(height: 30),
-                      _buildOrdersSection(isDesktop, isTablet),
-                      const SizedBox(height: 12),
-                    ],
+      appBar: _currentIndex == 0 ? _buildAppBar() : null,
+      body: IndexedStack(
+        index: _currentIndex,
+        children: [
+          SlideTransition(
+            position: _slideAnimation,
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.fromLTRB(16, 14, 16, 30),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 1240),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: isDesktop ? 40 : 4),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildStoreHeader(isDesktop || isTablet),
+                          const SizedBox(height: 26),
+                          _buildStatsRow(isDesktop, isTablet),
+                          const SizedBox(height: 30),
+                          _buildOrdersSection(isDesktop, isTablet),
+                          const SizedBox(height: 12),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),
             ),
           ),
-        ),
+          const BusinessProductsScreen(isTab: true),
+          const BusinessFinanceScreen(isTab: true),
+          const BusinessSettingsScreen(isTab: true),
+        ],
       ),
       // Bottom nav reactivado y modernizado
       bottomNavigationBar: _buildBottomNav(),
@@ -818,56 +827,29 @@ class _BusinessDashboardScreenState extends State<BusinessDashboardScreen>
                 icon: Icons.dashboard_outlined,
                 activeIcon: Icons.dashboard_rounded,
                 label: 'Dashboard',
-                isActive: true,
-                onTap: () {},
+                isActive: _currentIndex == 0,
+                onTap: () => setState(() => _currentIndex = 0),
               ),
               _BizNavItem(
                 icon: Icons.inventory_2_outlined,
                 activeIcon: Icons.inventory_2_rounded,
                 label: 'Productos',
-                isActive: false,
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const BusinessProductsScreen(),
-                  ),
-                ),
+                isActive: _currentIndex == 1,
+                onTap: () => setState(() => _currentIndex = 1),
               ),
-              // _BizNavItem(
-              //   icon: Icons.local_offer_outlined,
-              //   activeIcon: Icons.local_offer_rounded,
-              //   label: 'Promos',
-              //   isActive: false,
-              //   onTap: () => Navigator.push(
-              //     context,
-              //     MaterialPageRoute(
-              //       builder: (_) => const CreatePromotionScreen(),
-              //     ),
-              //   ),
-              // ),
               _BizNavItem(
                 icon: Icons.account_balance_wallet_outlined,
                 activeIcon: Icons.account_balance_wallet_rounded,
                 label: 'Finanzas',
-                isActive: false,
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const BusinessFinanceScreen(),
-                  ),
-                ),
+                isActive: _currentIndex == 2,
+                onTap: () => setState(() => _currentIndex = 2),
               ),
               _BizNavItem(
                 icon: Icons.settings_outlined,
                 activeIcon: Icons.settings_rounded,
                 label: 'Ajustes',
-                isActive: false,
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const BusinessSettingsScreen(),
-                  ),
-                ),
+                isActive: _currentIndex == 3,
+                onTap: () => setState(() => _currentIndex = 3),
               ),
             ],
           ),

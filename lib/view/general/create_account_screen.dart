@@ -274,7 +274,7 @@ class _RegisterScreenState extends State<RegisterScreen>
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               _StepLabel(
-                label: 'Datos personales',
+                label: 'Datos del negocio',
                 isActive: _currentStep == 0,
                 isDone: _currentStep > 0,
               ),
@@ -302,7 +302,7 @@ class _RegisterScreenState extends State<RegisterScreen>
           // Encabezado del paso
           _StepHeader(
             stepNumber: '1',
-            title: 'Cuéntanos sobre ti',
+            title: 'Cuéntanos sobre tu negocio',
             subtitle: 'Necesitamos estos datos para tu cuenta',
           ),
 

@@ -3,7 +3,8 @@ import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 class BusinessFinanceScreen extends StatefulWidget {
-  const BusinessFinanceScreen({super.key});
+  final bool isTab;
+  const BusinessFinanceScreen({super.key, this.isTab = false});
 
   @override
   State<BusinessFinanceScreen> createState() => _BusinessFinanceScreenState();
@@ -170,6 +171,7 @@ class _BusinessFinanceScreenState extends State<BusinessFinanceScreen>
         backgroundColor: const Color(0xFF05386B),
         foregroundColor: Colors.white,
         elevation: 0,
+        automaticallyImplyLeading: !widget.isTab,
         actions: [
           IconButton(icon: const Icon(Icons.download), onPressed: () {}),
         ],
