@@ -2,6 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
+class _C {
+  static const primary = Color(0xFF0F2B46);
+  static const primaryLight = Color(0xFF2C5B82);
+  static const accent = Color(0xFFE96A2C);
+  static const background = Color(0xFFF5F7FA);
+  static const surface = Colors.white;
+  static const surfaceSoft = Color(0xFFF9FBFD);
+  static const textPrimary = Color(0xFF132238);
+  static const textMuted = Color(0xFF8695A5);
+  static const divider = Color(0xFFE7EDF2);
+}
+
 class BusinessFinanceScreen extends StatefulWidget {
   final bool isTab;
   const BusinessFinanceScreen({super.key, this.isTab = false});
@@ -18,14 +30,17 @@ class _BusinessFinanceScreenState extends State<BusinessFinanceScreen>
     decimalDigits: 0,
   );
 
-  String _selectedPeriod = 'Esta Semana';
-  List<String> _periods = [
-    'Esta Semana',
-    'Semana Pasada',
-    'Este Mes',
-    'Mes Pasado',
-    'Este Año',
+  String _selectedPeriod = 'Hoy';
+  final List<String> _periods = [
+    'Hoy',
+    'Esta semana',
+    'Semana pasada',
+    'Este mes',
+    'Mes pasado',
+    'Este año',
+    'Personalizado',
   ];
+  DateTimeRange? _customRange;
 
   // Datos de ejemplo para gráfico de ventas semanales
   List<SalesData> _weeklySalesData = [];
@@ -155,38 +170,52 @@ class _BusinessFinanceScreenState extends State<BusinessFinanceScreen>
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isTablet = MediaQuery.of(context).size.width >= 600;
-    final isDesktop = MediaQuery.of(context).size.width >= 1200;
+    final size = MediaQuery.of(context).size;
+    final isTablet = size.width >= 600;
+    final isDesktop = size.width >= 1200;
     final summaryCrossCount = isDesktop
         ? 4
         : isTablet
         ? 3
         : 2;
+    final horizontal = isDesktop
+        ? 56.0
+        : isTablet
+        ? 32.0
+        : 16.0;
 
     return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
+      backgroundColor: _C.background,
       appBar: AppBar(
-        title: const Text('Finanzas'),
-        backgroundColor: const Color(0xFF05386B),
-        foregroundColor: Colors.white,
+        title: const Text(
+          'Finanzas',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w800,
+            color: _C.textPrimary,
+            letterSpacing: -0.3,
+          ),
+        ),
+        backgroundColor: _C.surface,
+        foregroundColor: _C.textPrimary,
         elevation: 0,
+        scrolledUnderElevation: 0,
         automaticallyImplyLeading: !widget.isTab,
-        actions: [
-          IconButton(icon: const Icon(Icons.download), onPressed: () {}),
-        ],
+        // actions: [
+        //   IconButton(
+        //     icon: const Icon(Icons.download_rounded),
+        //     onPressed: () {},
+        //   ),
+        // ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(height: 1, color: _C.divider),
+        ),
       ),
       body: FadeTransition(
         opacity: _fadeAnimation,
         child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(
-            horizontal: isDesktop
-                ? 64
-                : isTablet
-                ? 32
-                : 16,
-            vertical: 24,
-          ),
+          padding: EdgeInsets.symmetric(horizontal: horizontal, vertical: 18),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -197,8 +226,8 @@ class _BusinessFinanceScreenState extends State<BusinessFinanceScreen>
               _buildSalesChart(),
               const SizedBox(height: 32),
               _buildCommissionInfo(),
-              const SizedBox(height: 32),
-              _buildSettlements(isDesktop || isTablet),
+              // const SizedBox(height: 32),
+              // _buildSettlements(isDesktop || isTablet),
             ],
           ),
         ),
@@ -207,17 +236,92 @@ class _BusinessFinanceScreenState extends State<BusinessFinanceScreen>
   }
 
   Widget _buildPeriodSelector() {
-    return DropdownButtonFormField<String>(
-      value: _selectedPeriod,
-      items: _periods
-          .map((p) => DropdownMenuItem(value: p, child: Text(p)))
-          .toList(),
-      onChanged: (v) => setState(() => _selectedPeriod = v!),
-      decoration: InputDecoration(
-        labelText: 'Período',
-        prefixIcon: const Icon(Icons.calendar_today),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: DropdownButtonFormField<String>(
+                value: _selectedPeriod,
+                items: _periods
+                    .map((p) => DropdownMenuItem(value: p, child: Text(p)))
+                    .toList(),
+                onChanged: (v) => setState(() => _selectedPeriod = v!),
+                decoration: InputDecoration(
+                  labelText: 'Período',
+                  labelStyle: const TextStyle(color: _C.textMuted),
+                  prefixIcon: const Icon(
+                    Icons.calendar_today_rounded,
+                    color: _C.primaryLight,
+                  ),
+                  filled: true,
+                  fillColor: _C.surfaceSoft,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: const BorderSide(color: _C.divider),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: const BorderSide(color: _C.divider),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            IconButton.filledTonal(
+              onPressed: _pickCustomRange,
+              icon: const Icon(Icons.date_range_rounded),
+              style: IconButton.styleFrom(
+                backgroundColor: _C.surfaceSoft,
+                foregroundColor: _C.primary,
+              ),
+            ),
+          ],
+        ),
+        if (_customRange != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            'Rango: ${_dateFormat.format(_customRange!.start)} - ${_dateFormat.format(_customRange!.end)}',
+            style: const TextStyle(
+              color: _C.textMuted,
+              fontSize: 12.5,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Future<void> _pickCustomRange() async {
+    final now = DateTime.now();
+    final picked = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(now.year - 2),
+      lastDate: DateTime(now.year + 1),
+      initialDateRange:
+          _customRange ??
+          DateTimeRange(start: now.subtract(const Duration(days: 6)), end: now),
+      helpText: 'Selecciona un periodo',
+      saveText: 'Aplicar',
+    );
+    if (picked == null) return;
+    setState(() {
+      _customRange = picked;
+      _selectedPeriod = 'Personalizado';
+    });
+  }
+
+  Widget _surfaceCard({required Widget child}) {
+    return Card(
+      elevation: 0,
+      color: _C.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: const BorderSide(color: _C.divider),
       ),
+      child: child,
     );
   }
 
@@ -231,7 +335,7 @@ class _BusinessFinanceScreenState extends State<BusinessFinanceScreen>
       childAspectRatio: 0.9,
       children: [
         _buildSummaryCard(
-          'Ventas Totales',
+          'Ventas totales',
           _financialSummary.totalSales,
           Icons.trending_up,
           const Color(0xFF05386B),
@@ -243,13 +347,13 @@ class _BusinessFinanceScreenState extends State<BusinessFinanceScreen>
           const Color(0xFFFF6B00),
         ),
         _buildSummaryCard(
-          'Monto Neto',
+          'Monto neto',
           _financialSummary.netAmount,
           Icons.account_balance_wallet,
           Colors.green,
         ),
         _buildSummaryCard(
-          'Pendiente Liquidar',
+          'Pendiente liquidar',
           _financialSummary.pendingSettlements,
           Icons.pending,
           Colors.orange,
@@ -264,9 +368,7 @@ class _BusinessFinanceScreenState extends State<BusinessFinanceScreen>
     IconData icon,
     Color color,
   ) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+    return _surfaceCard(
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -274,11 +376,11 @@ class _BusinessFinanceScreenState extends State<BusinessFinanceScreen>
           children: [
             Icon(icon, size: 32, color: color),
             const SizedBox(height: 16),
-            Text(title, style: TextStyle(color: Colors.grey[600])),
+            Text(title, style: const TextStyle(color: _C.textMuted)),
             Text(
               _currencyFormat.format(amount),
               style: TextStyle(
-                fontSize: 24,
+                fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: color,
               ),
@@ -290,9 +392,7 @@ class _BusinessFinanceScreenState extends State<BusinessFinanceScreen>
   }
 
   Widget _buildSalesChart() {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+    return _surfaceCard(
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -303,7 +403,7 @@ class _BusinessFinanceScreenState extends State<BusinessFinanceScreen>
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF05386B),
+                color: _C.textPrimary,
               ),
             ),
             const SizedBox(height: 16),
@@ -316,7 +416,7 @@ class _BusinessFinanceScreenState extends State<BusinessFinanceScreen>
                     dataSource: _weeklySalesData,
                     xValueMapper: (d, _) => d.day,
                     yValueMapper: (d, _) => d.amount,
-                    color: const Color(0xFF05386B),
+                    color: _C.primary,
                   ),
                 ],
               ),
@@ -328,9 +428,7 @@ class _BusinessFinanceScreenState extends State<BusinessFinanceScreen>
   }
 
   Widget _buildCommissionInfo() {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+    return _surfaceCard(
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -341,7 +439,7 @@ class _BusinessFinanceScreenState extends State<BusinessFinanceScreen>
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF05386B),
+                color: _C.textPrimary,
               ),
             ),
             const SizedBox(height: 16),
@@ -352,51 +450,45 @@ class _BusinessFinanceScreenState extends State<BusinessFinanceScreen>
     );
   }
 
-  Widget _buildSettlements(bool isWide) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 800),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Flexible(
-                child: Text(
-                  'Liquidaciones',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF05386B),
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Flexible(
-                child: ElevatedButton.icon(
-                  onPressed: () {},
-                  icon: const Icon(Icons.request_page),
-                  label: const Text('Solicitar'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFFF6B00),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-        Card(
-          elevation: 4,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: isWide ? _buildSettlementsTable() : _buildSettlementsList(),
-        ),
-      ],
-    );
-  }
+  // Widget _buildSettlements(bool isWide) {
+  //   return Column(
+  //     crossAxisAlignment: CrossAxisAlignment.start,
+  //     children: [
+  //       ConstrainedBox(
+  //         constraints: const BoxConstraints(maxWidth: 800),
+  //         child: Row(
+  //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //           children: [
+  //             const Flexible(
+  //               child: Text(
+  //                 'Liquidaciones',
+  //                 style: TextStyle(
+  //                   fontSize: 20,
+  //                   fontWeight: FontWeight.bold,
+  //                   color: _C.textPrimary,
+  //                 ),
+  //                 overflow: TextOverflow.ellipsis,
+  //               ),
+  //             ),
+  //             const SizedBox(width: 16),
+  //             Flexible(
+  //               child: ElevatedButton.icon(
+  //                 onPressed: () {},
+  //                 icon: const Icon(Icons.request_page),
+  //                 label: const Text('Solicitar'),
+  //                 style: ElevatedButton.styleFrom(backgroundColor: _C.accent),
+  //               ),
+  //             ),
+  //           ],
+  //         ),
+  //       ),
+  //       const SizedBox(height: 16),
+  //       _surfaceCard(
+  //         child: isWide ? _buildSettlementsTable() : _buildSettlementsList(),
+  //       ),
+  //     ],
+  //   );
+  // }
 
   Widget _buildSettlementsTable() {
     return SingleChildScrollView(

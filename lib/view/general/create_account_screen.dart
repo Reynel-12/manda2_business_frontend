@@ -55,13 +55,22 @@ class _RegisterScreenState extends State<RegisterScreen>
     GlobalKey<FormState>(),
   ];
 
-  // Controladores (sin cambios)
-  final TextEditingController _firstNameController = TextEditingController();
-  final TextEditingController _lastNameController = TextEditingController();
-  final TextEditingController _phoneController = TextEditingController();
-  final TextEditingController _neighborhoodController = TextEditingController();
-  final TextEditingController _houseController = TextEditingController();
-  final TextEditingController _referencesController = TextEditingController();
+  // Controladores del negocio
+  final TextEditingController _businessNameController = TextEditingController();
+  final TextEditingController _businessDescriptionController =
+      TextEditingController();
+  final TextEditingController _businessPhoneController =
+      TextEditingController();
+  final TextEditingController _businessEmailController =
+      TextEditingController();
+  final TextEditingController _businessAddressController =
+      TextEditingController();
+  final TextEditingController _businessWebsiteController =
+      TextEditingController();
+  final TextEditingController _deliveryRadiusController =
+      TextEditingController();
+  final TextEditingController _preparationTimeController =
+      TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
@@ -76,6 +85,61 @@ class _RegisterScreenState extends State<RegisterScreen>
     'Municipio Este',
     'Municipio Oeste',
   ];
+  final List<String> _businessCategories = [
+    'Restaurante',
+    'Comida rápida',
+    'Cafetería',
+    'Panadería',
+    'Supermercado',
+    'Farmacia',
+  ];
+  final Set<String> _selectedCategories = {'Restaurante'};
+  final List<_BusinessDay> _businessSchedule = [
+    _BusinessDay(
+      day: 'Lunes',
+      openTime: TimeOfDay(hour: 8, minute: 0),
+      closeTime: TimeOfDay(hour: 22, minute: 0),
+      isOpen: true,
+    ),
+    _BusinessDay(
+      day: 'Martes',
+      openTime: TimeOfDay(hour: 8, minute: 0),
+      closeTime: TimeOfDay(hour: 22, minute: 0),
+      isOpen: true,
+    ),
+    _BusinessDay(
+      day: 'Miercoles',
+      openTime: TimeOfDay(hour: 8, minute: 0),
+      closeTime: TimeOfDay(hour: 22, minute: 0),
+      isOpen: true,
+    ),
+    _BusinessDay(
+      day: 'Jueves',
+      openTime: TimeOfDay(hour: 8, minute: 0),
+      closeTime: TimeOfDay(hour: 22, minute: 0),
+      isOpen: true,
+    ),
+    _BusinessDay(
+      day: 'Viernes',
+      openTime: TimeOfDay(hour: 8, minute: 0),
+      closeTime: TimeOfDay(hour: 23, minute: 0),
+      isOpen: true,
+    ),
+    _BusinessDay(
+      day: 'Sabado',
+      openTime: TimeOfDay(hour: 9, minute: 0),
+      closeTime: TimeOfDay(hour: 23, minute: 0),
+      isOpen: true,
+    ),
+    _BusinessDay(
+      day: 'Domingo',
+      openTime: TimeOfDay(hour: 10, minute: 0),
+      closeTime: TimeOfDay(hour: 18, minute: 0),
+      isOpen: false,
+    ),
+  ];
+  bool _hasLogo = false;
+  final List<bool> _bannerSlots = [false, false];
 
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
@@ -104,6 +168,8 @@ class _RegisterScreenState extends State<RegisterScreen>
           CurvedAnimation(parent: _stepAnimController, curve: Curves.easeOut),
         );
     _stepAnimController.forward();
+    _deliveryRadiusController.text = '5';
+    _preparationTimeController.text = '25';
 
     _passwordController.addListener(_evaluatePasswordStrength);
   }
@@ -111,12 +177,14 @@ class _RegisterScreenState extends State<RegisterScreen>
   @override
   void dispose() {
     _stepAnimController.dispose();
-    _firstNameController.dispose();
-    _lastNameController.dispose();
-    _phoneController.dispose();
-    _neighborhoodController.dispose();
-    _houseController.dispose();
-    _referencesController.dispose();
+    _businessNameController.dispose();
+    _businessDescriptionController.dispose();
+    _businessPhoneController.dispose();
+    _businessEmailController.dispose();
+    _businessAddressController.dispose();
+    _businessWebsiteController.dispose();
+    _deliveryRadiusController.dispose();
+    _preparationTimeController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
@@ -132,6 +200,30 @@ class _RegisterScreenState extends State<RegisterScreen>
     if (p.contains(RegExp(r'[A-Z]'))) strength++;
     if (p.contains(RegExp(r'[0-9!@#\$&*]'))) strength++;
     setState(() => _passwordStrength = strength);
+  }
+
+  String _formatTime(TimeOfDay t) {
+    final hour = t.hourOfPeriod == 0 ? 12 : t.hourOfPeriod;
+    final minute = t.minute.toString().padLeft(2, '0');
+    final period = t.period == DayPeriod.am ? 'AM' : 'PM';
+    return '$hour:$minute $period';
+  }
+
+  Future<void> _pickScheduleTime(int index) async {
+    final day = _businessSchedule[index];
+    final open = await showTimePicker(
+      context: context,
+      initialTime: day.openTime,
+    );
+    if (open == null || !mounted) return;
+    final close = await showTimePicker(
+      context: context,
+      initialTime: day.closeTime,
+    );
+    if (close == null || !mounted) return;
+    setState(() {
+      _businessSchedule[index] = day.copyWith(openTime: open, closeTime: close);
+    });
   }
 
   void _nextStep() {
@@ -299,59 +391,68 @@ class _RegisterScreenState extends State<RegisterScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Encabezado del paso
           _StepHeader(
             stepNumber: '1',
-            title: 'Cuéntanos sobre tu negocio',
-            subtitle: 'Necesitamos estos datos para tu cuenta',
+            title: 'Cuentanos sobre tu negocio',
+            subtitle: 'Necesitamos estos datos para activar tu cuenta',
           ),
-
           const SizedBox(height: _S.lg),
-
-          // ── Grupo: Información personal ──────────────────────────────
           _GroupCard(
-            label: 'Información personal',
-            icon: Icons.person_outline_rounded,
+            label: 'Informacion basica',
+            icon: Icons.store_outlined,
             children: [
               _RegField(
-                controller: _firstNameController,
-                label: 'Nombre',
-                icon: Icons.badge_outlined,
+                controller: _businessNameController,
+                label: 'Nombre del negocio',
+                icon: Icons.store_outlined,
                 textInputAction: TextInputAction.next,
                 validator: (v) =>
-                    v?.isEmpty ?? true ? 'Ingresa tu nombre' : null,
+                    v?.isEmpty ?? true ? 'Ingresa el nombre del negocio' : null,
               ),
               const _FieldDivider(),
               _RegField(
-                controller: _lastNameController,
-                label: 'Apellido',
-                icon: Icons.badge_outlined,
+                controller: _businessDescriptionController,
+                label: 'Descripcion',
+                icon: Icons.notes_outlined,
+                maxLines: 3,
                 textInputAction: TextInputAction.next,
-                validator: (v) =>
-                    v?.isEmpty ?? true ? 'Ingresa tu apellido' : null,
               ),
               const _FieldDivider(),
               _RegField(
-                controller: _phoneController,
-                label: 'Teléfono',
+                controller: _businessPhoneController,
+                label: 'Telefono',
                 icon: Icons.phone_outlined,
                 keyboardType: TextInputType.phone,
                 textInputAction: TextInputAction.next,
                 validator: (v) {
-                  if (v?.isEmpty ?? true) return 'Ingresa tu teléfono';
-                  if (v!.length < 8) return 'Número inválido (mín. 8 dígitos)';
+                  if (v?.isEmpty ?? true)
+                    return 'Ingresa un telefono de contacto';
+                  if (v!.length < 8) return 'Numero invalido (min. 8 digitos)';
+                  return null;
+                },
+              ),
+              const _FieldDivider(),
+              _RegField(
+                controller: _businessEmailController,
+                label: 'Correo del negocio',
+                icon: Icons.email_outlined,
+                keyboardType: TextInputType.emailAddress,
+                textInputAction: TextInputAction.next,
+                validator: (v) {
+                  if (v?.isEmpty ?? true)
+                    return 'Ingresa el correo del negocio';
+                  if (!v!.contains('@') || !v.contains('.')) {
+                    return 'Correo invalido';
+                  }
                   return null;
                 },
               ),
             ],
           ),
-
           const SizedBox(height: _S.md),
-
-          // ── Grupo: Ubicación ─────────────────────────────────────────
           _GroupCard(
-            label: 'Municipio',
-            icon: Icons.location_city_outlined,
+            label: 'Ubicacion y contacto digital',
+            icon: Icons.location_on_outlined,
             children: [
               _RegDropdown(
                 value: _selectedMunicipality,
@@ -361,52 +462,277 @@ class _RegisterScreenState extends State<RegisterScreen>
                     ? 'Selecciona un municipio'
                     : null,
               ),
-            ],
-          ),
-
-          const SizedBox(height: _S.md),
-
-          // ── Grupo: Dirección ─────────────────────────────────────────
-          _GroupCard(
-            label: 'Dirección de entrega',
-            icon: Icons.home_outlined,
-            children: [
+              const _FieldDivider(),
               _RegField(
-                controller: _neighborhoodController,
-                label: 'Barrio / Colonia',
+                controller: _businessAddressController,
+                label: 'Direccion',
                 icon: Icons.location_on_outlined,
                 textInputAction: TextInputAction.next,
-                validator: (v) =>
-                    v?.isEmpty ?? true ? 'Ingresa tu barrio' : null,
+                validator: (v) => v?.isEmpty ?? true
+                    ? 'Ingresa la direccion del negocio'
+                    : null,
               ),
               const _FieldDivider(),
               _RegField(
-                controller: _houseController,
-                label: 'Casa / Edificio / Apartamento',
-                icon: Icons.maps_home_work_outlined,
+                controller: _businessWebsiteController,
+                label: 'Sitio web',
+                icon: Icons.language_outlined,
+                keyboardType: TextInputType.url,
                 textInputAction: TextInputAction.next,
-                validator: (v) =>
-                    v?.isEmpty ?? true ? 'Ingresa tu dirección' : null,
-              ),
-              const _FieldDivider(),
-              _RegField(
-                controller: _referencesController,
-                label: 'Referencias',
-                icon: Icons.info_outline_rounded,
-                maxLines: 3,
                 isOptional: true,
-                textInputAction: TextInputAction.done,
               ),
             ],
           ),
-
+          const SizedBox(height: _S.md),
+          _GroupCard(
+            label: 'Operaciones',
+            icon: Icons.delivery_dining_outlined,
+            children: [
+              _RegField(
+                controller: _deliveryRadiusController,
+                label: 'Radio de entrega (km)',
+                icon: Icons.map_outlined,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                textInputAction: TextInputAction.next,
+                validator: (v) {
+                  final n = double.tryParse(v ?? '');
+                  if (n == null || n <= 0) return 'Ingresa un radio valido';
+                  return null;
+                },
+              ),
+              const _FieldDivider(),
+              _RegField(
+                controller: _preparationTimeController,
+                label: 'Tiempo de preparacion (min)',
+                icon: Icons.timer_outlined,
+                keyboardType: TextInputType.number,
+                textInputAction: TextInputAction.done,
+                validator: (v) {
+                  final n = int.tryParse(v ?? '');
+                  if (n == null || n < 0) return 'Ingresa un tiempo valido';
+                  return null;
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: _S.md),
+          _GroupCard(
+            label: 'Categorias del negocio',
+            icon: Icons.local_offer_outlined,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(_S.md),
+                child: Wrap(
+                  spacing: _S.sm,
+                  runSpacing: _S.sm,
+                  children: _businessCategories.map((category) {
+                    final isSelected = _selectedCategories.contains(category);
+                    return FilterChip(
+                      label: Text(category),
+                      selected: isSelected,
+                      onSelected: (selected) {
+                        setState(() {
+                          if (selected) {
+                            _selectedCategories.add(category);
+                          } else if (_selectedCategories.length > 1) {
+                            _selectedCategories.remove(category);
+                          }
+                        });
+                      },
+                      selectedColor: _C.primarySoft,
+                      checkmarkColor: _C.primary,
+                      side: BorderSide(
+                        color: isSelected ? _C.primary : _C.divider,
+                      ),
+                      labelStyle: TextStyle(
+                        color: isSelected ? _C.primary : _C.textSec,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 12,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: _S.md),
+          _GroupCard(
+            label: 'Horario de atencion',
+            icon: Icons.schedule_outlined,
+            children: [
+              ..._businessSchedule.asMap().entries.map((entry) {
+                final i = entry.key;
+                final day = entry.value;
+                final isLast = i == _businessSchedule.length - 1;
+                return Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: _S.md,
+                        vertical: _S.sm,
+                      ),
+                      child: Row(
+                        children: [
+                          SizedBox(
+                            width: 82,
+                            child: Text(
+                              day.day,
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: day.isOpen ? _C.primary : _C.textMuted,
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: day.isOpen
+                                  ? () => _pickScheduleTime(i)
+                                  : null,
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 180),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 8,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: day.isOpen ? _C.primarySoft : _C.bg,
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: _C.divider),
+                                ),
+                                child: Text(
+                                  day.isOpen
+                                      ? '${_formatTime(day.openTime)} - ${_formatTime(day.closeTime)}'
+                                      : 'Cerrado',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: day.isOpen
+                                        ? _C.primary
+                                        : _C.textMuted,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Switch(
+                            value: day.isOpen,
+                            activeColor: _C.primary,
+                            onChanged: (v) {
+                              setState(() {
+                                _businessSchedule[i] = day.copyWith(isOpen: v);
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (!isLast) const _FieldDivider(),
+                  ],
+                );
+              }),
+            ],
+          ),
+          const SizedBox(height: _S.md),
+          _GroupCard(
+            label: 'Imagenes del negocio',
+            icon: Icons.image_outlined,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(_S.md),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Logo',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: _C.textMuted,
+                      ),
+                    ),
+                    const SizedBox(height: _S.sm),
+                    GestureDetector(
+                      onTap: () => setState(() => _hasLogo = !_hasLogo),
+                      child: Container(
+                        width: 82,
+                        height: 82,
+                        decoration: BoxDecoration(
+                          color: _hasLogo ? _C.primarySoft : _C.bg,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: _C.divider),
+                        ),
+                        child: Icon(
+                          _hasLogo
+                              ? Icons.check_circle_rounded
+                              : Icons.add_a_photo_outlined,
+                          color: _hasLogo ? _C.primary : _C.textMuted,
+                          size: 26,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: _S.md),
+                    const Text(
+                      'Banners',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: _C.textMuted,
+                      ),
+                    ),
+                    const SizedBox(height: _S.sm),
+                    Row(
+                      children: _bannerSlots.asMap().entries.map((entry) {
+                        final i = entry.key;
+                        final hasImage = entry.value;
+                        return Padding(
+                          padding: EdgeInsets.only(
+                            right: i == _bannerSlots.length - 1 ? 0 : _S.sm,
+                          ),
+                          child: GestureDetector(
+                            onTap: () {
+                              setState(() => _bannerSlots[i] = !hasImage);
+                            },
+                            child: Container(
+                              width: 110,
+                              height: 70,
+                              decoration: BoxDecoration(
+                                color: hasImage ? _C.primarySoft : _C.bg,
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(color: _C.divider),
+                              ),
+                              child: Icon(
+                                hasImage
+                                    ? Icons.check_rounded
+                                    : Icons.add_photo_alternate_outlined,
+                                color: hasImage ? _C.primary : _C.textMuted,
+                                size: 24,
+                              ),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: _S.sm),
+                    const Text(
+                      'Toca cada espacio para cargar logo y banners.',
+                      style: TextStyle(fontSize: 11, color: _C.textMuted),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
           const SizedBox(height: _S.md),
         ],
       ),
     );
   }
-
-  // ── Paso 2: Datos de cuenta ───────────────────────────────────────────────
 
   Widget _buildStep2() {
     return Form(
@@ -484,9 +810,8 @@ class _RegisterScreenState extends State<RegisterScreen>
 
           // ── Resumen del paso anterior ────────────────────────────────
           _SummaryCard(
-            name: '${_firstNameController.text} ${_lastNameController.text}'
-                .trim(),
-            phone: _phoneController.text,
+            name: _businessNameController.text.trim(),
+            phone: _businessPhoneController.text,
             municipality: _selectedMunicipality ?? '',
             previousStep: _previousStep,
           ),
@@ -609,6 +934,34 @@ class _RegisterScreenState extends State<RegisterScreen>
 // ─────────────────────────────────────────────────────────────────────────────
 // SUBCOMPONENTES
 // ─────────────────────────────────────────────────────────────────────────────
+
+class _BusinessDay {
+  final String day;
+  final TimeOfDay openTime;
+  final TimeOfDay closeTime;
+  final bool isOpen;
+
+  const _BusinessDay({
+    required this.day,
+    required this.openTime,
+    required this.closeTime,
+    required this.isOpen,
+  });
+
+  _BusinessDay copyWith({
+    String? day,
+    TimeOfDay? openTime,
+    TimeOfDay? closeTime,
+    bool? isOpen,
+  }) {
+    return _BusinessDay(
+      day: day ?? this.day,
+      openTime: openTime ?? this.openTime,
+      closeTime: closeTime ?? this.closeTime,
+      isOpen: isOpen ?? this.isOpen,
+    );
+  }
+}
 
 /// Label compacto del stepper
 class _StepLabel extends StatelessWidget {
