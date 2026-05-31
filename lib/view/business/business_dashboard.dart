@@ -3,24 +3,24 @@ import 'package:flutter/services.dart';
 import 'package:manda2_business_frontend/view/business/business_finance_screen.dart';
 import 'package:manda2_business_frontend/view/business/business_product_screen.dart';
 import 'package:manda2_business_frontend/view/business/business_settings.dart';
-import 'package:manda2_business_frontend/view/business/create_promotion_screen.dart';
 
 // ─────────────────────────────────────────────
 // Design tokens
 // ─────────────────────────────────────────────
 class _C {
-  static const primary = Color(0xFF05386B);
-  static const primaryLight = Color(0xFF0E6BAD);
-  static const accent = Color(0xFFFF6B00);
-  static const accentSoft = Color(0xFFFFF0E6);
-  static const background = Color(0xFFF9FAFB);
+  static const primary = Color(0xFF0F2B46);
+  static const primaryLight = Color(0xFF2C5B82);
+  static const accent = Color(0xFFE96A2C);
+  static const accentSoft = Color(0xFFFFF2EA);
+  static const background = Color(0xFFF5F7FA);
   static const surface = Colors.white;
-  static const textPrimary = Color(0xFF0D1B2A);
-  static const textSecondary = Color(0xFF2C3E50);
-  static const textHint = Color(0xFF9AA5B1);
-  static const divider = Color(0xFFECEFF1);
+  static const surfaceSoft = Color(0xFFF9FBFD);
+  static const textPrimary = Color(0xFF132238);
+  static const textSecondary = Color(0xFF40546A);
+  static const textHint = Color(0xFF8695A5);
+  static const divider = Color(0xFFE7EDF2);
   static const error = Color(0xFFE74C3C);
-  static const success = Color(0xFF1B8A5A);
+  static const success = Color(0xFF1E8E5A);
   static const warning = Color(0xFFF59E0B);
 }
 
@@ -460,7 +460,7 @@ class _BusinessDashboardScreenState extends State<BusinessDashboardScreen>
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.light,
+        statusBarIconBrightness: Brightness.dark,
       ),
     );
 
@@ -468,27 +468,31 @@ class _BusinessDashboardScreenState extends State<BusinessDashboardScreen>
       key: _scaffoldKey,
       backgroundColor: _C.background,
       appBar: _buildAppBar(),
-      drawer: _buildDrawer(),
       body: SlideTransition(
         position: _slideAnimation,
         child: FadeTransition(
           opacity: _fadeAnimation,
           child: SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
-            padding: EdgeInsets.symmetric(
-              horizontal: isDesktop ? 64 : 20,
-              vertical: 20,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildStoreHeader(isDesktop || isTablet),
-                const SizedBox(height: 24),
-                _buildStatsRow(isDesktop, isTablet),
-                const SizedBox(height: 28),
-                _buildOrdersSection(isDesktop, isTablet),
-                const SizedBox(height: 32),
-              ],
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 30),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1240),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: isDesktop ? 40 : 4),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildStoreHeader(isDesktop || isTablet),
+                      const SizedBox(height: 26),
+                      _buildStatsRow(isDesktop, isTablet),
+                      const SizedBox(height: 30),
+                      _buildOrdersSection(isDesktop, isTablet),
+                      const SizedBox(height: 12),
+                    ],
+                  ),
+                ),
+              ),
             ),
           ),
         ),
@@ -503,29 +507,30 @@ class _BusinessDashboardScreenState extends State<BusinessDashboardScreen>
   // ─────────────────────────────────────────────
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
-      backgroundColor: _C.primary,
-      foregroundColor: Colors.white,
+      backgroundColor: _C.surface,
+      foregroundColor: _C.textPrimary,
       elevation: 0,
       scrolledUnderElevation: 0,
-      leading: IconButton(
-        icon: const Icon(Icons.menu_rounded),
-        onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-        splashRadius: 22,
-      ),
+      // leading: IconButton(
+      //   icon: const Icon(Icons.menu_rounded),
+      //   onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+      //   splashRadius: 22,
+      // ),
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: const [
           Text(
             'Dashboard',
             style: TextStyle(
-              fontSize: 17,
-              fontWeight: FontWeight.w700,
-              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+              color: _C.textPrimary,
+              letterSpacing: -0.2,
             ),
           ),
           Text(
             'Vista del negocio',
-            style: TextStyle(fontSize: 12, color: Colors.white70),
+            style: TextStyle(fontSize: 12.5, color: _C.textHint),
           ),
         ],
       ),
@@ -548,190 +553,9 @@ class _BusinessDashboardScreenState extends State<BusinessDashboardScreen>
         ),
         const SizedBox(width: 4),
       ],
-    );
-  }
-
-  // ─────────────────────────────────────────────
-  // Drawer
-  // ─────────────────────────────────────────────
-  Widget _buildDrawer() {
-    final store = _storeInfo!;
-    return Drawer(
-      backgroundColor: _C.surface,
-      child: Column(
-        children: [
-          Container(
-            width: double.infinity,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [_C.primary, _C.primaryLight],
-              ),
-            ),
-            child: SafeArea(
-              bottom: false,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(24, 24, 24, 28),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.white.withOpacity(0.4),
-                          width: 2.5,
-                        ),
-                      ),
-                      child: const CircleAvatar(
-                        radius: 32,
-                        backgroundColor: Colors.white,
-                        child: Icon(
-                          Icons.store_rounded,
-                          size: 30,
-                          color: _C.primary,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-                    Text(
-                      store.name,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      store.category,
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.7),
-                        fontSize: 13,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              children: [
-                const SizedBox(height: 8),
-                _buildDrawerItem(
-                  Icons.inventory_2_outlined,
-                  'Productos',
-                  () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const BusinessProductsScreen(),
-                    ),
-                  ),
-                ),
-                _buildDrawerItem(
-                  Icons.local_offer_outlined,
-                  'Promociones',
-                  () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const CreatePromotionScreen(),
-                    ),
-                  ),
-                ),
-                _buildDrawerItem(
-                  Icons.account_balance_wallet_outlined,
-                  'Finanzas',
-                  () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const BusinessFinanceScreen(),
-                    ),
-                  ),
-                ),
-                _buildDrawerItem(
-                  Icons.settings_outlined,
-                  'Configuración',
-                  () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const BusinessSettingsScreen(),
-                    ),
-                  ),
-                ),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                  child: Divider(color: _C.divider, height: 1),
-                ),
-                _buildDrawerItem(
-                  Icons.logout_rounded,
-                  'Cerrar sesión',
-                  () => Navigator.pop(context),
-                  color: _C.error,
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(bottom: 24),
-            child: Text(
-              'Manda2 Business v1.0',
-              style: TextStyle(color: _C.textHint, fontSize: 12),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDrawerItem(
-    IconData icon,
-    String title,
-    VoidCallback onTap, {
-    Color? color,
-  }) {
-    final c = color ?? _C.textSecondary;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(_R.md),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(_R.md),
-          splashColor: c.withOpacity(0.08),
-          onTap: () {
-            Navigator.pop(context);
-            onTap();
-          },
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 13),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: c.withOpacity(0.08),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(icon, size: 18, color: c),
-                ),
-                const SizedBox(width: 14),
-                Text(
-                  title,
-                  style: TextStyle(
-                    color: c,
-                    fontSize: 14.5,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(1),
+        child: Container(height: 1, color: _C.divider),
       ),
     );
   }
@@ -744,16 +568,16 @@ class _BusinessDashboardScreenState extends State<BusinessDashboardScreen>
     final isOpen = store.isOpen;
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
         color: _C.surface,
         borderRadius: BorderRadius.circular(_R.xl),
-        border: Border.all(color: _C.divider),
+        border: Border.all(color: _C.divider.withOpacity(0.95)),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x0A000000),
-            blurRadius: 12,
-            offset: Offset(0, 4),
+            color: Color(0x120F2B46),
+            blurRadius: 24,
+            offset: Offset(0, 8),
           ),
         ],
       ),
@@ -828,7 +652,7 @@ class _BusinessDashboardScreenState extends State<BusinessDashboardScreen>
             .map(
               (d) => Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.only(right: 14),
+                  padding: const EdgeInsets.only(right: 12),
                   child: _StatCard(data: d),
                 ),
               ),
@@ -839,7 +663,7 @@ class _BusinessDashboardScreenState extends State<BusinessDashboardScreen>
 
     // Móvil: scroll horizontal compacto
     return SizedBox(
-      height: 96,
+      height: 104,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
@@ -876,54 +700,65 @@ class _BusinessDashboardScreenState extends State<BusinessDashboardScreen>
         )
         .toList();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // ── Header ─────────────────────────────
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              'Pedidos',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
-                color: _C.textPrimary,
-                letterSpacing: -0.4,
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: _C.accentSoft,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text(
-                '${_orders.length} total',
-                style: const TextStyle(
-                  color: _C.accent,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
+    return Container(
+      padding: const EdgeInsets.fromLTRB(18, 16, 18, 18),
+      decoration: BoxDecoration(
+        color: _C.surface,
+        borderRadius: BorderRadius.circular(_R.xl),
+        border: Border.all(color: _C.divider),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ── Header ─────────────────────────────
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Pedidos',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  color: _C.textPrimary,
+                  letterSpacing: -0.4,
                 ),
               ),
-            ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: _C.accentSoft,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  '${_orders.length} total',
+                  style: const TextStyle(
+                    color: _C.accent,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+
+          // ── Pedidos activos ─────────────────────
+          if (activeOrders.isNotEmpty) ...[
+            _buildOrderGrid(activeOrders, isDesktop, isTablet),
           ],
-        ),
-        const SizedBox(height: 14),
 
-        // ── Pedidos activos ─────────────────────
-        if (activeOrders.isNotEmpty) ...[
-          _buildOrderGrid(activeOrders, isDesktop, isTablet),
+          // ── Pedidos finalizados ─────────────────
+          if (finishedOrders.isNotEmpty) ...[
+            const SizedBox(height: 20),
+            const _SectionDivider(label: 'Finalizados'),
+            const SizedBox(height: 12),
+            _buildOrderGrid(finishedOrders, isDesktop, isTablet, opacity: 0.65),
+          ],
         ],
-
-        // ── Pedidos finalizados ─────────────────
-        if (finishedOrders.isNotEmpty) ...[
-          const SizedBox(height: 20),
-          const _SectionDivider(label: 'Finalizados'),
-          const SizedBox(height: 12),
-          _buildOrderGrid(finishedOrders, isDesktop, isTablet, opacity: 0.65),
-        ],
-      ],
+      ),
     );
   }
 
@@ -972,20 +807,11 @@ class _BusinessDashboardScreenState extends State<BusinessDashboardScreen>
   // ─────────────────────────────────────────────
   Widget _buildBottomNav() {
     return Container(
-      decoration: const BoxDecoration(
-        color: _C.surface,
-        boxShadow: [
-          BoxShadow(
-            color: Color(0x14000000),
-            blurRadius: 16,
-            offset: Offset(0, -4),
-          ),
-        ],
-      ),
+      decoration: const BoxDecoration(color: _C.surface),
       child: SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          padding: const EdgeInsets.fromLTRB(10, 7, 10, 8),
           child: Row(
             children: [
               _BizNavItem(
@@ -1007,18 +833,18 @@ class _BusinessDashboardScreenState extends State<BusinessDashboardScreen>
                   ),
                 ),
               ),
-              _BizNavItem(
-                icon: Icons.local_offer_outlined,
-                activeIcon: Icons.local_offer_rounded,
-                label: 'Promos',
-                isActive: false,
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const CreatePromotionScreen(),
-                  ),
-                ),
-              ),
+              // _BizNavItem(
+              //   icon: Icons.local_offer_outlined,
+              //   activeIcon: Icons.local_offer_rounded,
+              //   label: 'Promos',
+              //   isActive: false,
+              //   onTap: () => Navigator.push(
+              //     context,
+              //     MaterialPageRoute(
+              //       builder: (_) => const CreatePromotionScreen(),
+              //     ),
+              //   ),
+              // ),
               _BizNavItem(
                 icon: Icons.account_balance_wallet_outlined,
                 activeIcon: Icons.account_balance_wallet_rounded,
@@ -1092,7 +918,7 @@ class _BusinessDashboardScreenState extends State<BusinessDashboardScreen>
       case OrderStatus.preparing:
         return _C.primaryLight;
       case OrderStatus.ready:
-        return const Color(0xFF7B2FBE);
+        return const Color(0xFF1F8A70);
       case OrderStatus.onTheWay:
         return _C.accent;
       case OrderStatus.delivered:
@@ -1289,16 +1115,16 @@ class _StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
       decoration: BoxDecoration(
         color: _C.surface,
         borderRadius: BorderRadius.circular(_R.lg),
         border: Border.all(color: _C.divider),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x08000000),
-            blurRadius: 8,
-            offset: Offset(0, 2),
+            color: Color(0x0B0F2B46),
+            blurRadius: 16,
+            offset: Offset(0, 6),
           ),
         ],
       ),
@@ -1348,12 +1174,18 @@ class _StatCardCompact extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: 148,
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
       decoration: BoxDecoration(
         color: _C.surface,
         borderRadius: BorderRadius.circular(_R.md),
         border: Border.all(color: _C.divider),
-        boxShadow: const [BoxShadow(color: Color(0x08000000), blurRadius: 6)],
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0A0F2B46),
+            blurRadius: 14,
+            offset: Offset(0, 5),
+          ),
+        ],
       ),
       child: Row(
         children: [
@@ -1447,8 +1279,8 @@ class _OrderCard extends StatelessWidget {
     return Material(
       color: _C.surface,
       borderRadius: BorderRadius.circular(_R.lg),
-      elevation: isActive ? 2 : 0,
-      shadowColor: const Color(0x0A000000),
+      elevation: isActive ? 1.5 : 0,
+      shadowColor: const Color(0x140F2B46),
       child: InkWell(
         borderRadius: BorderRadius.circular(_R.lg),
         splashColor: _C.primary.withOpacity(0.04),
@@ -1468,7 +1300,7 @@ class _OrderCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.fromLTRB(14, 12, 14, 10),
                 decoration: BoxDecoration(
-                  color: statusColor.withOpacity(0.06),
+                  color: statusColor.withOpacity(0.07),
                   borderRadius: const BorderRadius.vertical(
                     top: Radius.circular(_R.lg),
                   ),
@@ -1521,7 +1353,7 @@ class _OrderCard extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.all(7),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFE8F0F8),
+                            color: _C.surfaceSoft,
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: const Icon(
@@ -1679,7 +1511,7 @@ class _OrderActionChip extends StatelessWidget {
           _label,
           style: TextStyle(
             color: _isUrgent ? Colors.white : _C.textSecondary,
-            fontSize: 12,
+            fontSize: 11.8,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -1712,10 +1544,10 @@ class _BizNavItem extends StatelessWidget {
         behavior: HitTestBehavior.opaque,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: 7),
+          padding: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
             color: isActive ? _C.primary.withOpacity(0.08) : Colors.transparent,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(14),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,

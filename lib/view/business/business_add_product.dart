@@ -5,18 +5,21 @@ import 'package:flutter/services.dart';
 //  DESIGN TOKENS
 // ─────────────────────────────────────────────
 class AppColors {
-  static const primary = Color(0xFF05386B);
-  static const primarySurface = Color(0xFFE8F0FA);
-  static const accent = Color(0xFFFF6B00);
-  static const accentSurface = Color(0xFFFFF3EB);
-  static const background = Color(0xFFF9FAFB);
+  static const primary = Color(0xFF0F2B46);
+  static const primaryLight = Color(0xFF2C5B82);
+  static const primarySurface = Color(0xFFF0F5FA);
+  static const accent = Color(0xFFE96A2C);
+  static const accentSurface = Color(0xFFFFF2EA);
+  static const background = Color(0xFFF5F7FA);
   static const surface = Colors.white;
-  static const textSecondary = Color(0xFF2C3E50);
-  static const textMuted = Color(0xFF7F8C9A);
-  static const divider = Color(0xFFECEFF4);
+  static const surfaceSoft = Color(0xFFF9FBFD);
+  static const textPrimary = Color(0xFF132238);
+  static const textSecondary = Color(0xFF40546A);
+  static const textMuted = Color(0xFF8695A5);
+  static const divider = Color(0xFFE7EDF2);
   static const error = Color(0xFFE74C3C);
   static const errorSurface = Color(0xFFFDEDEC);
-  static const success = Color(0xFF27AE60);
+  static const success = Color(0xFF1E8E5A);
 }
 
 class AppRadius {
@@ -29,21 +32,16 @@ class AppRadius {
 class AppShadow {
   static List<BoxShadow> card = [
     BoxShadow(
-      color: const Color(0xFF05386B).withOpacity(0.06),
-      blurRadius: 14,
-      offset: const Offset(0, 3),
-    ),
-    BoxShadow(
-      color: Colors.black.withOpacity(0.025),
-      blurRadius: 3,
-      offset: const Offset(0, 1),
+      color: const Color(0xFF0F2B46).withOpacity(0.08),
+      blurRadius: 22,
+      offset: const Offset(0, 8),
     ),
   ];
   static List<BoxShadow> bottom = [
     BoxShadow(
-      color: const Color(0xFF05386B).withOpacity(0.08),
-      blurRadius: 20,
-      offset: const Offset(0, -4),
+      color: const Color(0xFF0F2B46).withOpacity(0.08),
+      blurRadius: 22,
+      offset: const Offset(0, -6),
     ),
   ];
 }
@@ -237,7 +235,16 @@ class _ProductFormScreenState extends State<ProductFormScreen>
   // ─────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
-    final isWide = MediaQuery.of(context).size.width > 600;
+    final size = MediaQuery.of(context).size;
+    final isWide = size.width > 600;
+    final isDesktop = size.width >= 1200;
+
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.dark,
+      ),
+    );
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -251,10 +258,18 @@ class _ProductFormScreenState extends State<ProductFormScreen>
             autovalidateMode: AutovalidateMode.onUserInteraction,
             child: ListView(
               padding: EdgeInsets.fromLTRB(
-                isWide ? 48 : 16,
-                24,
-                isWide ? 48 : 16,
-                100,
+                isDesktop
+                    ? 56
+                    : isWide
+                    ? 32
+                    : 16,
+                18,
+                isDesktop
+                    ? 56
+                    : isWide
+                    ? 32
+                    : 16,
+                112,
               ),
               children: [
                 // Sección 1: Imágenes
@@ -302,16 +317,18 @@ class _ProductFormScreenState extends State<ProductFormScreen>
 
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
-      backgroundColor: AppColors.primary,
-      foregroundColor: Colors.white,
+      backgroundColor: AppColors.surface,
+      foregroundColor: AppColors.textPrimary,
       elevation: 0,
+      scrolledUnderElevation: 0,
       centerTitle: false,
       leading: IconButton(
         icon: Container(
           padding: const EdgeInsets.all(6),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.12),
+            color: AppColors.surfaceSoft,
             borderRadius: AppRadius.sm,
+            border: Border.all(color: AppColors.divider),
           ),
           child: const Icon(Icons.arrow_back, size: 18),
         ),
@@ -323,8 +340,9 @@ class _ProductFormScreenState extends State<ProductFormScreen>
           Text(
             'Nuevo producto',
             style: TextStyle(
-              fontSize: 17,
-              fontWeight: FontWeight.w700,
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+              color: AppColors.textPrimary,
               letterSpacing: -0.3,
             ),
           ),
@@ -332,11 +350,15 @@ class _ProductFormScreenState extends State<ProductFormScreen>
             'Completa la información',
             style: TextStyle(
               fontSize: 12,
-              color: Colors.white60,
+              color: AppColors.textMuted,
               fontWeight: FontWeight.w400,
             ),
           ),
         ],
+      ),
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(1),
+        child: Container(height: 1, color: AppColors.divider),
       ),
     );
   }
@@ -734,6 +756,7 @@ class _ProductFormScreenState extends State<ProductFormScreen>
       ),
       decoration: BoxDecoration(
         color: AppColors.surface,
+        border: Border(top: BorderSide(color: AppColors.divider)),
         boxShadow: AppShadow.bottom,
       ),
       child: Row(
@@ -822,6 +845,7 @@ class _SectionCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: AppRadius.lg,
+        border: Border.all(color: AppColors.divider),
         boxShadow: AppShadow.card,
       ),
       child: Column(
@@ -837,9 +861,9 @@ class _SectionCard extends StatelessWidget {
                 Text(
                   title,
                   style: const TextStyle(
-                    fontSize: 13,
+                    fontSize: 14,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.primary,
+                    color: AppColors.textPrimary,
                     letterSpacing: 0.1,
                   ),
                 ),
@@ -945,7 +969,7 @@ class _AppField extends StatelessWidget {
             ),
             prefixIcon: Icon(icon, size: 18, color: AppColors.textMuted),
             filled: true,
-            fillColor: AppColors.background,
+            fillColor: AppColors.surfaceSoft,
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 14,
               vertical: 13,
@@ -961,7 +985,7 @@ class _AppField extends StatelessWidget {
             focusedBorder: OutlineInputBorder(
               borderRadius: AppRadius.md,
               borderSide: const BorderSide(
-                color: AppColors.primary,
+                color: AppColors.primaryLight,
                 width: 1.5,
               ),
             ),
@@ -1044,7 +1068,7 @@ class _AppDropdown<T> extends StatelessWidget {
           decoration: InputDecoration(
             prefixIcon: Icon(icon, size: 18, color: AppColors.textMuted),
             filled: true,
-            fillColor: AppColors.background,
+            fillColor: AppColors.surfaceSoft,
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 14,
               vertical: 13,
@@ -1060,7 +1084,7 @@ class _AppDropdown<T> extends StatelessWidget {
             focusedBorder: OutlineInputBorder(
               borderRadius: AppRadius.md,
               borderSide: const BorderSide(
-                color: AppColors.primary,
+                color: AppColors.primaryLight,
                 width: 1.5,
               ),
             ),
@@ -1128,7 +1152,7 @@ class _ToggleTile extends StatelessWidget {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       decoration: BoxDecoration(
-        color: value ? activeColor.withOpacity(0.05) : AppColors.background,
+        color: value ? activeColor.withOpacity(0.05) : AppColors.surfaceSoft,
         borderRadius: AppRadius.md,
         border: Border.all(
           color: value ? activeColor.withOpacity(0.25) : AppColors.divider,
@@ -1140,7 +1164,7 @@ class _ToggleTile extends StatelessWidget {
         secondary: Container(
           padding: const EdgeInsets.all(7),
           decoration: BoxDecoration(
-            color: value ? iconColor.withOpacity(0.1) : AppColors.background,
+            color: value ? iconColor.withOpacity(0.1) : AppColors.surface,
             shape: BoxShape.circle,
           ),
           child: Icon(
@@ -1209,7 +1233,7 @@ class _ImageSlot extends StatelessWidget {
             child: url == '__mock__'
                 ? const Icon(
                     Icons.image_outlined,
-                    color: AppColors.primary,
+                    color: AppColors.primaryLight,
                     size: 32,
                   )
                 : Image.network(
@@ -1324,10 +1348,10 @@ class _AddImageSlotState extends State<_AddImageSlot>
           width: 90,
           height: 90,
           decoration: BoxDecoration(
-            color: AppColors.background,
+            color: AppColors.surfaceSoft,
             borderRadius: AppRadius.md,
             border: Border.all(
-              color: AppColors.primary.withOpacity(0.3),
+              color: AppColors.primaryLight.withOpacity(0.35),
               width: 1.5,
               style: BorderStyle.solid,
             ),
@@ -1338,14 +1362,14 @@ class _AddImageSlotState extends State<_AddImageSlot>
               Icon(
                 Icons.add_photo_alternate_outlined,
                 size: 28,
-                color: AppColors.primary.withOpacity(0.7),
+                color: AppColors.primaryLight.withOpacity(0.72),
               ),
               const SizedBox(height: 4),
               Text(
                 'Agregar',
                 style: TextStyle(
                   fontSize: 11,
-                  color: AppColors.primary.withOpacity(0.7),
+                  color: AppColors.primaryLight.withOpacity(0.72),
                   fontWeight: FontWeight.w500,
                 ),
               ),

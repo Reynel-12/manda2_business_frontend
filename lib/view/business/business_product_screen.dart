@@ -6,17 +6,19 @@ import 'package:manda2_business_frontend/view/business/business_add_product.dart
 // Design tokens
 // ─────────────────────────────────────────────
 class _C {
-  static const primary = Color(0xFF05386B);
-  static const accent = Color(0xFFFF6B00);
-  static const accentSoft = Color(0xFFFFF0E6);
-  static const background = Color(0xFFF9FAFB);
+  static const primary = Color(0xFF0F2B46);
+  static const primaryLight = Color(0xFF2C5B82);
+  static const accent = Color(0xFFE96A2C);
+  static const accentSoft = Color(0xFFFFF2EA);
+  static const background = Color(0xFFF5F7FA);
   static const surface = Colors.white;
-  static const textPrimary = Color(0xFF0D1B2A);
-  static const textSecondary = Color(0xFF2C3E50);
-  static const textHint = Color(0xFF9AA5B1);
-  static const divider = Color(0xFFECEFF1);
+  static const surfaceSoft = Color(0xFFF9FBFD);
+  static const textPrimary = Color(0xFF132238);
+  static const textSecondary = Color(0xFF40546A);
+  static const textHint = Color(0xFF8695A5);
+  static const divider = Color(0xFFE7EDF2);
   static const error = Color(0xFFE74C3C);
-  static const success = Color(0xFF1B8A5A);
+  static const success = Color(0xFF1E8E5A);
   static const warning = Color(0xFFF59E0B);
   static const starColor = Color(0xFFFFA726);
 }
@@ -475,23 +477,37 @@ class _BusinessProductsScreenState extends State<BusinessProductsScreen>
   @override
   Widget build(BuildContext context) {
     final filtered = _filteredProducts;
+    final size = MediaQuery.of(context).size;
+    final isDesktop = size.width >= 1200;
+
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.dark,
+      ),
+    );
 
     return Scaffold(
       backgroundColor: _C.background,
       appBar: _buildAppBar(filtered.length),
       body: FadeTransition(
         opacity: _fadeAnimation,
-        child: Column(
-          children: [
-            _buildSearchBar(),
-            _buildCategoryBar(),
-            if (_filtersExpanded) _buildExpandedFilters(),
-            Expanded(
-              child: filtered.isEmpty
-                  ? _buildEmptyState()
-                  : _buildProductList(filtered),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 1240),
+            child: Column(
+              children: [
+                _buildSearchBar(isDesktop),
+                _buildCategoryBar(isDesktop),
+                if (_filtersExpanded) _buildExpandedFilters(isDesktop),
+                Expanded(
+                  child: filtered.isEmpty
+                      ? _buildEmptyState()
+                      : _buildProductList(filtered, isDesktop),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
@@ -501,7 +517,7 @@ class _BusinessProductsScreenState extends State<BusinessProductsScreen>
         ),
         backgroundColor: _C.accent,
         foregroundColor: Colors.white,
-        elevation: 2,
+        elevation: 0,
         icon: const Icon(Icons.add_rounded),
         label: const Text(
           'Agregar',
@@ -516,8 +532,8 @@ class _BusinessProductsScreenState extends State<BusinessProductsScreen>
   // ─────────────────────────────────────────────
   PreferredSizeWidget _buildAppBar(int count) {
     return AppBar(
-      backgroundColor: _C.primary,
-      foregroundColor: Colors.white,
+      backgroundColor: _C.surface,
+      foregroundColor: _C.textPrimary,
       elevation: 0,
       scrolledUnderElevation: 0,
       leading: IconButton(
@@ -531,14 +547,15 @@ class _BusinessProductsScreenState extends State<BusinessProductsScreen>
           const Text(
             'Mis Productos',
             style: TextStyle(
-              fontSize: 17,
-              fontWeight: FontWeight.w700,
-              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+              color: _C.textPrimary,
+              letterSpacing: -0.2,
             ),
           ),
           Text(
             '$count producto${count != 1 ? 's' : ''}',
-            style: const TextStyle(fontSize: 12, color: Colors.white70),
+            style: const TextStyle(fontSize: 12.5, color: _C.textHint),
           ),
         ],
       ),
@@ -569,7 +586,7 @@ class _BusinessProductsScreenState extends State<BusinessProductsScreen>
                     decoration: BoxDecoration(
                       color: _C.accent,
                       shape: BoxShape.circle,
-                      border: Border.all(color: _C.primary, width: 1.5),
+                      border: Border.all(color: _C.surface, width: 1.5),
                     ),
                     child: Center(
                       child: Text(
@@ -587,21 +604,30 @@ class _BusinessProductsScreenState extends State<BusinessProductsScreen>
           ),
         ),
       ],
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(1),
+        child: Container(height: 1, color: _C.divider),
+      ),
     );
   }
 
   // ─────────────────────────────────────────────
   // Search bar
   // ─────────────────────────────────────────────
-  Widget _buildSearchBar() {
+  Widget _buildSearchBar(bool isDesktop) {
     return Container(
       color: _C.surface,
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-      child: Container(
+      padding: EdgeInsets.fromLTRB(
+        isDesktop ? 24 : 16,
+        12,
+        isDesktop ? 24 : 16,
+        8,
+      ),
+      child: DecoratedBox(
         decoration: BoxDecoration(
-          color: _C.background,
+          color: _C.surfaceSoft,
           borderRadius: BorderRadius.circular(_R.lg),
-          border: Border.all(color: _C.divider),
+          border: Border.all(color: _C.divider.withOpacity(0.95)),
         ),
         child: TextField(
           controller: _searchController,
@@ -612,7 +638,11 @@ class _BusinessProductsScreenState extends State<BusinessProductsScreen>
             hintStyle: const TextStyle(color: _C.textHint, fontSize: 14),
             prefixIcon: const Padding(
               padding: EdgeInsets.only(left: 14, right: 10),
-              child: Icon(Icons.search_rounded, color: _C.primary, size: 20),
+              child: Icon(
+                Icons.search_rounded,
+                color: _C.primaryLight,
+                size: 20,
+              ),
             ),
             prefixIconConstraints: const BoxConstraints(
               minWidth: 0,
@@ -646,7 +676,7 @@ class _BusinessProductsScreenState extends State<BusinessProductsScreen>
   // ─────────────────────────────────────────────
   // Category bar — con chip "+" al final
   // ─────────────────────────────────────────────
-  Widget _buildCategoryBar() {
+  Widget _buildCategoryBar(bool isDesktop) {
     return Container(
       color: _C.surface,
       padding: const EdgeInsets.only(bottom: 10),
@@ -655,7 +685,7 @@ class _BusinessProductsScreenState extends State<BusinessProductsScreen>
         child: ListView.separated(
           scrollDirection: Axis.horizontal,
           physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: EdgeInsets.symmetric(horizontal: isDesktop ? 24 : 16),
           // +1 para el chip de agregar
           itemCount: _categories.length + 1,
           separatorBuilder: (_, __) => const SizedBox(width: 8),
@@ -757,11 +787,16 @@ class _BusinessProductsScreenState extends State<BusinessProductsScreen>
   // ─────────────────────────────────────────────
   // Filtros expandibles
   // ─────────────────────────────────────────────
-  Widget _buildExpandedFilters() {
+  Widget _buildExpandedFilters(bool isDesktop) {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 220),
       color: _C.surface,
-      padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+      padding: EdgeInsets.fromLTRB(
+        isDesktop ? 24 : 16,
+        6,
+        isDesktop ? 24 : 16,
+        14,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -890,10 +925,15 @@ class _BusinessProductsScreenState extends State<BusinessProductsScreen>
   // ─────────────────────────────────────────────
   // Product list
   // ─────────────────────────────────────────────
-  Widget _buildProductList(List<BusinessProduct> products) {
+  Widget _buildProductList(List<BusinessProduct> products, bool isDesktop) {
     return ListView.separated(
       physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 100),
+      padding: EdgeInsets.fromLTRB(
+        isDesktop ? 24 : 16,
+        16,
+        isDesktop ? 24 : 16,
+        110,
+      ),
       itemCount: products.length,
       separatorBuilder: (_, __) => const SizedBox(height: 12),
       itemBuilder: (_, i) {
@@ -941,8 +981,9 @@ class _BusinessProductsScreenState extends State<BusinessProductsScreen>
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: const Color(0xFFE8F0F8),
+                color: _C.surfaceSoft,
                 borderRadius: BorderRadius.circular(_R.xl),
+                border: Border.all(color: _C.divider),
               ),
               child: Icon(
                 hasSearch
@@ -1684,8 +1725,8 @@ class _ProductCard extends StatelessWidget {
     return Material(
       color: _C.surface,
       borderRadius: BorderRadius.circular(_R.lg),
-      elevation: product.isAvailable ? 2 : 0,
-      shadowColor: const Color(0x0A000000),
+      elevation: product.isAvailable ? 1.5 : 0,
+      shadowColor: const Color(0x140F2B46),
       child: InkWell(
         borderRadius: BorderRadius.circular(_R.lg),
         splashColor: _C.primary.withOpacity(0.04),
@@ -1710,8 +1751,8 @@ class _ProductCard extends StatelessWidget {
                   left: Radius.circular(_R.lg),
                 ),
                 child: SizedBox(
-                  width: 90,
-                  height: 110,
+                  width: 98,
+                  height: 118,
                   child: _ProductImagePlaceholder(
                     isAvailable: product.isAvailable,
                   ),
@@ -1719,7 +1760,7 @@ class _ProductCard extends StatelessWidget {
               ),
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(12, 12, 8, 12),
+                  padding: const EdgeInsets.fromLTRB(13, 12, 10, 12),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -1765,7 +1806,7 @@ class _ProductCard extends StatelessWidget {
                                 Text(
                                   product.name,
                                   style: TextStyle(
-                                    fontSize: 14.5,
+                                    fontSize: 14.8,
                                     fontWeight: FontWeight.w700,
                                     color: product.isAvailable
                                         ? _C.textPrimary
@@ -1809,7 +1850,7 @@ class _ProductCard extends StatelessWidget {
                               fontSize: 17,
                               fontWeight: FontWeight.w800,
                               color: product.isAvailable
-                                  ? _C.primary
+                                  ? _C.primaryLight
                                   : _C.textHint,
                               letterSpacing: -0.4,
                             ),
@@ -1837,7 +1878,7 @@ class _ProductCard extends StatelessWidget {
                               vertical: 3,
                             ),
                             decoration: BoxDecoration(
-                              color: _C.starColor.withOpacity(0.12),
+                              color: _C.starColor.withOpacity(0.11),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Row(
@@ -1940,6 +1981,7 @@ class _SmallBadge extends StatelessWidget {
     decoration: BoxDecoration(
       color: bgColor,
       borderRadius: BorderRadius.circular(6),
+      border: Border.all(color: textColor.withOpacity(0.15)),
     ),
     child: Text(
       label,
@@ -1988,7 +2030,7 @@ class _ToggleChipState extends State<_ToggleChip> {
               ? widget.activeColor.withOpacity(_pressed ? 0.2 : 0.1)
               : _pressed
               ? _C.divider
-              : _C.background,
+              : _C.surfaceSoft,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: widget.isActive
@@ -2027,7 +2069,7 @@ class _ProductImagePlaceholder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: isAvailable ? const Color(0xFFE8F0F8) : const Color(0xFFECEFF1),
+      color: isAvailable ? _C.surfaceSoft : const Color(0xFFECEFF1),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -2097,8 +2139,9 @@ class _ProductActionsSheet extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFE8F0F8),
+                    color: _C.surfaceSoft,
                     borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: _C.divider),
                   ),
                   child: const Icon(
                     Icons.inventory_2_outlined,

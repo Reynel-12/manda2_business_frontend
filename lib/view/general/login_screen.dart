@@ -145,7 +145,7 @@ class _LoginScreenState extends State<LoginScreen>
         _AppLogo(),
         const SizedBox(height: 20),
         const Text(
-          'Manda2',
+          'Manda2 - Negocios',
           style: TextStyle(
             fontSize: 34,
             fontWeight: FontWeight.w900,
@@ -155,7 +155,7 @@ class _LoginScreenState extends State<LoginScreen>
         ),
         const SizedBox(height: 6),
         const Text(
-          'Delivery local, rápido y cercano',
+          'Delivery local, rápido y cercano para tu negocio',
           style: TextStyle(
             fontSize: 14,
             color: _C.textMuted,

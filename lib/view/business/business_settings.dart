@@ -5,19 +5,21 @@ import 'package:flutter/services.dart';
 //  DESIGN TOKENS
 // ─────────────────────────────────────────────
 class AppColors {
-  static const primary = Color(0xFF05386B);
-  static const primaryLight = Color(0xFF0A4F9A);
-  static const primarySurface = Color(0xFFE8F0FA);
-  static const accent = Color(0xFFFF6B00);
-  static const accentSurface = Color(0xFFFFF3EB);
-  static const background = Color(0xFFF9FAFB);
+  static const primary = Color(0xFF0F2B46);
+  static const primaryLight = Color(0xFF2C5B82);
+  static const primarySurface = Color(0xFFF0F5FA);
+  static const accent = Color(0xFFE96A2C);
+  static const accentSurface = Color(0xFFFFF2EA);
+  static const background = Color(0xFFF5F7FA);
   static const surface = Colors.white;
-  static const textSecondary = Color(0xFF2C3E50);
-  static const textMuted = Color(0xFF7F8C9A);
-  static const divider = Color(0xFFECEFF4);
+  static const surfaceSoft = Color(0xFFF9FBFD);
+  static const textPrimary = Color(0xFF132238);
+  static const textSecondary = Color(0xFF40546A);
+  static const textMuted = Color(0xFF8695A5);
+  static const divider = Color(0xFFE7EDF2);
   static const error = Color(0xFFE74C3C);
   static const errorSurface = Color(0xFFFDEDEC);
-  static const success = Color(0xFF27AE60);
+  static const success = Color(0xFF1E8E5A);
   static const successSurface = Color(0xFFEAF7EF);
   static const warning = Color(0xFFF39C12);
   static const warningSurface = Color(0xFFFEF9EC);
@@ -33,21 +35,16 @@ class AppRadius {
 class AppShadow {
   static List<BoxShadow> card = [
     BoxShadow(
-      color: const Color(0xFF05386B).withOpacity(0.06),
-      blurRadius: 14,
-      offset: const Offset(0, 3),
-    ),
-    BoxShadow(
-      color: Colors.black.withOpacity(0.025),
-      blurRadius: 3,
-      offset: const Offset(0, 1),
+      color: const Color(0xFF0F2B46).withOpacity(0.08),
+      blurRadius: 22,
+      offset: const Offset(0, 8),
     ),
   ];
   static List<BoxShadow> bottom = [
     BoxShadow(
-      color: const Color(0xFF05386B).withOpacity(0.08),
-      blurRadius: 20,
-      offset: const Offset(0, -4),
+      color: const Color(0xFF0F2B46).withOpacity(0.08),
+      blurRadius: 22,
+      offset: const Offset(0, -6),
     ),
   ];
 }
@@ -374,7 +371,16 @@ class _BusinessSettingsScreenState extends State<BusinessSettingsScreen>
   // ─────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
-    final isWide = MediaQuery.of(context).size.width > 768;
+    final size = MediaQuery.of(context).size;
+    final isWide = size.width > 768;
+    final isDesktop = size.width >= 1200;
+
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.dark,
+      ),
+    );
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -388,10 +394,10 @@ class _BusinessSettingsScreenState extends State<BusinessSettingsScreen>
             autovalidateMode: AutovalidateMode.onUserInteraction,
             child: ListView(
               padding: EdgeInsets.fromLTRB(
-                isWide ? 48 : 16,
+                isDesktop ? 56 : isWide ? 32 : 16,
                 0,
-                isWide ? 48 : 16,
-                _isEditing ? 100 : 24,
+                isDesktop ? 56 : isWide ? 32 : 16,
+                _isEditing ? 112 : 28,
               ),
               children: [
                 // Banner de modo edición
@@ -434,16 +440,18 @@ class _BusinessSettingsScreenState extends State<BusinessSettingsScreen>
 
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
-      backgroundColor: AppColors.primary,
-      foregroundColor: Colors.white,
+      backgroundColor: AppColors.surface,
+      foregroundColor: AppColors.textPrimary,
       elevation: 0,
+      scrolledUnderElevation: 0,
       centerTitle: false,
       leading: IconButton(
         icon: Container(
           padding: const EdgeInsets.all(6),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.12),
+            color: AppColors.surfaceSoft,
             borderRadius: AppRadius.sm,
+            border: Border.all(color: AppColors.divider),
           ),
           child: const Icon(Icons.arrow_back, size: 18),
         ),
@@ -461,8 +469,9 @@ class _BusinessSettingsScreenState extends State<BusinessSettingsScreen>
           Text(
             'Mi negocio',
             style: TextStyle(
-              fontSize: 17,
-              fontWeight: FontWeight.w700,
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+              color: AppColors.textPrimary,
               letterSpacing: -0.3,
             ),
           ),
@@ -470,7 +479,7 @@ class _BusinessSettingsScreenState extends State<BusinessSettingsScreen>
             'Configuración del perfil',
             style: TextStyle(
               fontSize: 12,
-              color: Colors.white60,
+              color: AppColors.textMuted,
               fontWeight: FontWeight.w400,
             ),
           ),
@@ -483,23 +492,28 @@ class _BusinessSettingsScreenState extends State<BusinessSettingsScreen>
             icon: const Icon(
               Icons.edit_outlined,
               size: 16,
-              color: Colors.white,
+              color: AppColors.primary,
             ),
             label: const Text(
               'Editar',
               style: TextStyle(
-                color: Colors.white,
+                color: AppColors.primary,
                 fontWeight: FontWeight.w600,
               ),
             ),
             style: TextButton.styleFrom(
-              backgroundColor: Colors.white.withOpacity(0.12),
+              backgroundColor: AppColors.surfaceSoft,
+              side: const BorderSide(color: AppColors.divider),
               shape: const RoundedRectangleBorder(borderRadius: AppRadius.sm),
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             ),
           ),
         const SizedBox(width: 8),
       ],
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(1),
+        child: Container(height: 1, color: AppColors.divider),
+      ),
     );
   }
 
@@ -529,7 +543,7 @@ class _BusinessSettingsScreenState extends State<BusinessSettingsScreen>
                   SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Modo edición activo — los cambios no se guardan hasta presionar "Guardar"',
+                      'Modo edición activo. Los cambios se guardan al presionar "Guardar".',
                       style: TextStyle(
                         fontSize: 12,
                         color: AppColors.accent,
@@ -615,7 +629,7 @@ class _BusinessSettingsScreenState extends State<BusinessSettingsScreen>
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.primary,
+                    color: AppColors.textPrimary,
                     letterSpacing: -0.3,
                   ),
                 ),
@@ -642,12 +656,13 @@ class _BusinessSettingsScreenState extends State<BusinessSettingsScreen>
                           decoration: BoxDecoration(
                             color: AppColors.primarySurface,
                             borderRadius: AppRadius.sm,
+                            border: Border.all(color: AppColors.divider),
                           ),
                           child: Text(
                             c,
                             style: const TextStyle(
                               fontSize: 10,
-                              color: AppColors.primary,
+                              color: AppColors.primaryLight,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -968,6 +983,7 @@ class _BusinessSettingsScreenState extends State<BusinessSettingsScreen>
       ),
       decoration: BoxDecoration(
         color: AppColors.surface,
+        border: Border(top: BorderSide(color: AppColors.divider)),
         boxShadow: AppShadow.bottom,
       ),
       child: Row(
@@ -1133,6 +1149,7 @@ class _SectionCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: AppRadius.lg,
+        border: Border.all(color: AppColors.divider),
         boxShadow: AppShadow.card,
       ),
       child: Column(
@@ -1142,14 +1159,14 @@ class _SectionCard extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
             child: Row(
               children: [
-                Icon(icon, size: 15, color: AppColors.primary),
+                Icon(icon, size: 15, color: AppColors.primaryLight),
                 const SizedBox(width: 7),
                 Text(
                   title,
                   style: const TextStyle(
-                    fontSize: 13,
+                    fontSize: 14,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.primary,
+                    color: AppColors.textPrimary,
                     letterSpacing: 0.1,
                   ),
                 ),
@@ -1168,7 +1185,7 @@ class _SectionCard extends StatelessWidget {
                       badge!,
                       style: const TextStyle(
                         fontSize: 11,
-                        color: AppColors.primary,
+                        color: AppColors.primaryLight,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -1288,7 +1305,7 @@ class _AppField extends StatelessWidget {
             suffixText: suffixText,
             prefixIcon: Icon(icon, size: 18, color: AppColors.textMuted),
             filled: true,
-            fillColor: AppColors.background,
+            fillColor: AppColors.surfaceSoft,
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 14,
               vertical: 13,
@@ -1304,7 +1321,7 @@ class _AppField extends StatelessWidget {
             focusedBorder: OutlineInputBorder(
               borderRadius: AppRadius.md,
               borderSide: const BorderSide(
-                color: AppColors.primary,
+                color: AppColors.primaryLight,
                 width: 1.5,
               ),
             ),
@@ -1379,7 +1396,7 @@ class _ScheduleRow extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: day.isOpen
                         ? AppColors.primarySurface
-                        : AppColors.background,
+                        : AppColors.surfaceSoft,
                     borderRadius: AppRadius.sm,
                     border: Border.all(
                       color: day.isOpen
@@ -1473,7 +1490,7 @@ class _BannerSlot extends StatelessWidget {
               ? const Center(
                   child: Icon(
                     Icons.image_outlined,
-                    color: AppColors.primary,
+                    color: AppColors.primaryLight,
                     size: 32,
                   ),
                 )
@@ -1531,10 +1548,10 @@ class _AddBannerSlot extends StatelessWidget {
         width: 100,
         margin: const EdgeInsets.only(right: 10),
         decoration: BoxDecoration(
-          color: AppColors.background,
+          color: AppColors.surfaceSoft,
           borderRadius: AppRadius.md,
           border: Border.all(
-            color: AppColors.primary.withOpacity(0.3),
+            color: AppColors.primaryLight.withOpacity(0.35),
             width: 1.5,
             style: BorderStyle.solid,
           ),
@@ -1545,14 +1562,14 @@ class _AddBannerSlot extends StatelessWidget {
             Icon(
               Icons.add_photo_alternate_outlined,
               size: 26,
-              color: AppColors.primary.withOpacity(0.7),
+              color: AppColors.primaryLight.withOpacity(0.72),
             ),
             const SizedBox(height: 4),
             Text(
               'Agregar',
               style: TextStyle(
                 fontSize: 11,
-                color: AppColors.primary.withOpacity(0.7),
+                color: AppColors.primaryLight.withOpacity(0.72),
                 fontWeight: FontWeight.w500,
               ),
             ),
